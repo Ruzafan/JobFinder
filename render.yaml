@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: jobfinder-cv-studio
+    runtime: docker
+    plan: free
+    region: frankfurt
+    healthCheckPath: /api/health
+    envVars:
+      - key: JOBFINDER_DATA_DIR
+        value: /app/data
+      - key: AI_PROVIDER
+        value: local

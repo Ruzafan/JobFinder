@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JobFinder CV Studio — Adaptación Honesta ATS</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">CV</div>
+        <div>
+          <div class="brand-name">JobFinder CV Studio</div>
+          <div class="brand-sub">Adaptación honesta para filtros ATS e IA</div>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <button id="btnProviderBadge" class="pill-btn" title="Configurar proveedor de IA">
+          <span class="dot"></span>
+          <span id="providerBadgeText">Modo Local</span>
+        </button>
+        <button id="btnOpenWifiModal" class="pill-btn pill-accent" title="Conectar desde móvil u otro PC">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+            <line x1="12" y1="20" x2="12.01" y2="20"></line>
+          </svg>
+          <span class="hide-sm">Conectar móvil</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="layout-body">
+      <!-- Navigation Sidebar / Bottom Bar on Mobile -->
+      <nav class="sidebar" aria-label="Navegación principal">
+        <button class="nav-item active" data-view="analyze">
+          <span class="nav-icon">🎯</span>
+          <span>Analizar oferta</span>
+        </button>
+        <button class="nav-item" data-view="hunter">
+          <span class="nav-icon">🔍</span>
+          <span>Buscar ofertas</span>
+          <span id="navHunterCount" class="nav-badge ok hidden">0</span>
+        </button>
+        <button class="nav-item" data-view="cv">
+          <span class="nav-icon">📄</span>
+          <span>Mi CV Base</span>
+          <span id="navCvStatus" class="nav-badge warn">Pendiente</span>
+        </button>
+        <button class="nav-item" data-view="knowledge">
+          <span class="nav-icon">🧠</span>
+          <span>Memoria</span>
+          <span id="navKbCount" class="nav-badge">0</span>
+        </button>
+        <button class="nav-item" data-view="history">
+          <span class="nav-icon">🗂️</span>
+          <span>Historial</span>
+          <span id="navHistoryCount" class="nav-badge">0</span>
+        </button>
+        <button class="nav-item" data-view="settings">
+          <span class="nav-icon">⚙️</span>
+          <span>Configuración</span>
+        </button>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main-content">
+
+        <!-- VIEW 1: ANALYZE JOB OFFER -->
+        <section id="view-analyze" class="view active">
+          <div id="missingCvBanner" class="alert-banner hidden">
+            <div>
+              <strong>Primero guarda tu CV Base:</strong> Sube tu PDF/DOCX o pega tu currículum para poder compararlo con ofertas de empleo.
+            </div>
+            <button class="btn btn-primary btn-sm" data-goto="cv">Ir a Mi CV Base</button>
+          </div>
+
+          <div id="localModeTip" class="info-banner hidden">
+            <div>
+              <strong>Modo Local Inteligente activo:</strong> Funciona sin API key para analizar requisitos, guardar tu memoria y adaptar el CV honestamente. Si quieres redacción profunda con IA, añade una clave gratuita de <strong>Google Gemini</strong>, <strong>OpenAI</strong> u <strong>Ollama local</strong> en Configuración.
+            </div>
+            <button class="btn btn-ghost btn-sm" data-goto="settings">Configurar IA</button>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h1>Nueva oferta de empleo</h1>
+                <p class="muted">Pega la URL de la oferta o su descripción completa. Compararemos cada punto con tu CV base y tu memoria persistente.</p>
+              </div>
+              <button id="btnResetAnalysis" class="btn btn-ghost btn-sm hidden">+ Nueva oferta</button>
+            </div>
+
+            <div class="form-row">
+              <label for="jobUrlInput">URL de la oferta (opcional)</label>
+              <div class="input-with-btn">
+                <input id="jobUrlInput" type="url" placeholder="https://www.linkedin.com/jobs/view/... o cualquier portal" />
+                <button id="btnFetchUrl" class="btn btn-secondary" type="button">Extraer oferta</button>
+              </div>
+              <small id="urlStatusMsg" class="field-hint"></small>
+            </div>
+
+            <div class="grid-3">
+              <div class="form-row">
+                <label for="jobTitleInput">Puesto (opcional, se detecta)</label>
+                <input id="jobTitleInput" type="text" placeholder="Ej: Desarrollador Full Stack" />
+              </div>
+              <div class="form-row">
+                <label for="jobCompanyInput">Empresa (opcional)</label>
+                <input id="jobCompanyInput" type="text" placeholder="Ej: Tech Iberia" />
+              </div>
+              <div class="form-row">
+                <label for="targetLangSelect">Idioma del CV adaptado</label>
+                <select id="targetLangSelect">
+                  <option value="auto">Automático (idioma de la oferta)</option>
+                  <option value="es">Español</option>
+                  <option value="en">Inglés (English)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label for="jobDescInput">Descripción de la oferta</label>
+              <textarea id="jobDescInput" rows="7" placeholder="Pega aquí la descripción, requisitos y responsabilidades de la oferta (o pulsa 'Extraer oferta' si has puesto una URL)..."></textarea>
+            </div>
+
+            <div class="actions-bar">
+              <button id="btnAnalyzeJob" class="btn btn-primary btn-lg" type="button">
+                Analizar encaje y detectar palabras clave
+              </button>
+              <button id="btnLoadDemoJob" class="btn btn-ghost btn-sm" type="button">Probar con oferta de ejemplo</button>
+            </div>
+          </div>
+
+          <!-- ANALYSIS RESULTS WORKSPACE -->
+          <div id="analysisWorkspace" class="hidden">
+            <!-- Summary & Scores -->
+            <div class="card score-card">
+              <div class="score-header">
+                <div>
+                  <span class="tag tag-soft" id="resProviderTag">motor local</span>
+                  <h2 id="resJobTitle">Título del puesto</h2>
+                  <div class="muted" id="resJobMeta"></div>
+                </div>
+                <div class="score-meters">
+                  <div class="meter">
+                    <div class="meter-value" id="resMatchScore">0%</div>
+                    <div class="meter-label">Encaje real</div>
+                  </div>
+                  <div class="meter meter-ats">
+                    <div class="meter-value" id="resAtsScore">0%</div>
+                    <div class="meter-label">Filtro ATS</div>
+                  </div>
+                </div>
+              </div>
+              <p id="resSummary" class="summary-text"></p>
+
+              <!-- ATS Keywords -->
+              <div class="keywords-grid">
+                <div>
+                  <div class="kw-heading kw-ok">✓ Palabras clave verificadas</div>
+                  <div id="kwMatched" class="chip-list"></div>
+                </div>
+                <div>
+                  <div class="kw-heading kw-hi">★ Prioritarias a destacar</div>
+                  <div id="kwHighlight" class="chip-list"></div>
+                </div>
+                <div>
+                  <div class="kw-heading kw-miss">○ Faltantes / por confirmar</div>
+                  <div id="kwMissing" class="chip-list"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive Unclear Questions (Persistent Memory!) -->
+            <div id="unclearSection" class="card card-highlight hidden">
+              <div class="card-header">
+                <div>
+                  <h2>❓ Puntos por confirmar contigo</h2>
+                  <p class="muted">No queda claro con tu CV actual si cumples estos puntos. Responde con honestidad: <strong>tus respuestas se guardarán en tu memoria permanente</strong> para no volver a preguntártelo en futuras ofertas.</p>
+                </div>
+              </div>
+              <div id="unclearList" class="qa-list"></div>
+              <div class="qa-footer">
+                <div class="form-row" style="flex:1; margin-bottom:0;">
+                  <input id="qaExtraInstructions" type="text" placeholder="Indicación opcional al adaptar (ej: 'destaca más mi experiencia en liderazgo' o 'resumen breve')" />
+                </div>
+                <button id="btnSubmitAnswers" class="btn btn-primary" type="button">
+                  Guardar en mi memoria y adaptar CV
+                </button>
+              </div>
+            </div>
+
+            <!-- Matched & Missing Comparison -->
+            <div class="grid-2">
+              <div class="card">
+                <h3>✅ Requisitos cumplidos (<span id="matchedCount">0</span>)</h3>
+                <div id="matchedList" class="req-list"></div>
+              </div>
+              <div class="card">
+                <h3>⚠️ Carencias / No incluidos (<span id="missingCount">0</span>)</h3>
+                <p class="muted small">Nunca se inventarán ni maquillarán estos puntos en tu CV.</p>
+                <div id="missingList" class="req-list"></div>
+              </div>
+            </div>
+
+            <!-- Generate / Refine Adapted CV -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2>✨ CV Adaptado Honesto (Optimizado ATS)</h2>
+                  <p class="muted">Reorganizado y redactado con las palabras clave exactas de la oferta que SÍ coinciden con tu experiencia real.</p>
+                </div>
+                <div class="btn-group">
+                  <button id="btnAdaptNow" class="btn btn-primary" type="button">Generar / Regenerar CV</button>
+                </div>
+              </div>
+
+              <div class="refine-bar">
+                <input id="refineInstructions" type="text" placeholder="¿Quieres ajustarlo juntos? Ej: 'Haz el resumen más directo', 'Agrupa las habilidades técnicas', 'Tradúcelo al inglés'..." />
+                <button id="btnRefineCv" class="btn btn-secondary" type="button">Aplicar ajuste</button>
+              </div>
+
+              <div id="adaptedCvEmpty" class="empty-inline">
+                Responde a las preguntas de arriba (o pulsa <strong>Generar CV</strong> directamente) para crear tu currículum adaptado y descargarlo en PDF o Word.
+              </div>
+
+              <div id="adaptedCvContainer" class="hidden">
+                <div class="export-toolbar">
+                  <div class="tabs-inline">
+                    <button class="tab-pill active" data-cv-tab="preview">Vista previa</button>
+                    <button class="tab-pill" data-cv-tab="edit">Editar texto</button>
+                    <button class="tab-pill" data-cv-tab="audit">Auditoría de honestidad</button>
+                  </div>
+                  <div class="export-buttons">
+                    <button id="btnCopyCv" class="btn btn-ghost btn-sm" type="button">📋 Copiar</button>
+                    <button id="btnDownloadMd" class="btn btn-ghost btn-sm" type="button">MD</button>
+                    <button id="btnDownloadDocx" class="btn btn-secondary btn-sm" type="button">⬇ Word (.docx)</button>
+                    <button id="btnDownloadPdf" class="btn btn-primary btn-sm" type="button">⬇ PDF (ATS)</button>
+                  </div>
+                </div>
+
+                <!-- Tab: Rendered Preview -->
+                <div id="cvTabPreview" class="cv-paper"></div>
+
+                <!-- Tab: Manual Editor -->
+                <div id="cvTabEdit" class="hidden">
+                  <textarea id="adaptedCvEditor" rows="18" class="mono-editor"></textarea>
+                  <div class="actions-bar" style="margin-top:10px;">
+                    <button id="btnSaveManualCv" class="btn btn-primary btn-sm" type="button">Guardar cambios manuales</button>
+                  </div>
+                </div>
+
+                <!-- Tab: Honesty Audit -->
+                <div id="cvTabAudit" class="hidden audit-panel">
+                  <div class="audit-section">
+                    <h4>🔍 Cambios realizados y por qué</h4>
+                    <div id="auditChanges"></div>
+                  </div>
+                  <div class="audit-section">
+                    <h4>🏷️ Palabras clave ATS integradas (con respaldo real)</h4>
+                    <div id="auditKeywords"></div>
+                  </div>
+                  <div class="audit-section">
+                    <h4>🛡️ Control de honestidad (qué NO se ha inventado)</h4>
+                    <ul id="auditHonesty" class="clean-list"></ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW: JOB HUNTER (SEARCH & DISCOVERY) -->
+        <section id="view-hunter" class="view">
+          <div id="hunterMissingCvBanner" class="alert-banner hidden">
+            <div>
+              <strong>Sube tu CV Base primero:</strong> Para poder buscar ofertas que encajen con tu perfil y calcular su compatibilidad, necesitamos conocer tu CV.
+            </div>
+            <button class="btn btn-primary btn-sm" data-goto="cv">Ir a Mi CV Base</button>
+          </div>
+
+          <div class="card hunter-hero-card">
+            <div class="card-header">
+              <div>
+                <h1>🔍 Buscador de Ofertas de Empleo Multi-Portal</h1>
+                <p class="muted">Explora ofertas en internet (España, Europa y remoto), calcula la <strong>afinidad (%) con tu CV base</strong> y te permite adaptar tu currículum en un solo clic.</p>
+              </div>
+              <div class="btn-group">
+                <button id="btnAutoDetectPrefs" class="btn btn-ghost btn-sm" type="button">🪄 Autodetectar de mi CV</button>
+                <button id="btnTogglePrefs" class="btn btn-secondary btn-sm" type="button">⚙️ Preferencias</button>
+              </div>
+            </div>
+
+            <!-- CV Anchored Primary Action -->
+            <div class="hunter-cta-box">
+              <div class="hunter-cta-text">
+                <strong>¿Quieres ofertas que encajen directamente con tu CV?</strong>
+                <div class="muted small">Analizaremos tu rol, tecnologías, años de experiencia y memoria permanente para buscar en todos los portales disponibles.</div>
+              </div>
+              <button id="btnSearchFromCv" class="btn btn-primary btn-lg btn-glow" type="button">
+                🎯 Buscar ofertas para mi CV
+              </button>
+            </div>
+
+            <!-- Country Selector -->
+            <div class="form-row" style="margin-top:16px;">
+              <label>País / Región de búsqueda:</label>
+              <div class="country-toggle-group" id="countryToggleGroup">
+                <button type="button" class="country-btn active" data-country="España">
+                  🇪🇸 España
+                </button>
+                <button type="button" class="country-btn" data-country="Europa">
+                  🇪🇺 Europa
+                </button>
+                <button type="button" class="country-btn" data-country="Global">
+                  🌎 Remoto Global
+                </button>
+                <button type="button" class="country-btn" data-country="Estados Unidos">
+                  🇺🇸 Estados Unidos
+                </button>
+                <button type="button" class="country-btn" data-country="México">
+                  🇲🇽 México
+                </button>
+                <button type="button" class="country-btn" data-country="Argentina">
+                  🇦🇷 Argentina
+                </button>
+                <button type="button" class="country-btn" data-country="Colombia">
+                  🇨🇴 Colombia
+                </button>
+                <button type="button" class="country-btn" data-country="Chile">
+                  🇨🇱 Chile
+                </button>
+                <button type="button" class="country-btn" data-country="Reino Unido">
+                  🇬🇧 Reino Unido
+                </button>
+                <button type="button" class="country-btn" data-country="Alemania">
+                  🇩🇪 Alemania
+                </button>
+                <button type="button" class="country-btn" data-country="custom" id="btnCustomCountry">
+                  ✏️ Otro país...
+                </button>
+              </div>
+              <div id="customCountryBox" class="hidden" style="margin-top:8px;">
+                <input id="hunterCustomCountryInput" type="text" placeholder="Escribe el país (ej: Francia, Uruguay, Perú, Suiza...)" style="max-width:320px;" />
+              </div>
+            </div>
+
+            <!-- Modality Selector -->
+            <div class="form-row" style="margin-top:16px;">
+              <label>Modalidad de trabajo deseada:</label>
+              <div class="modality-toggle-group" id="modalityToggleGroup">
+                <button type="button" class="modality-btn active" data-modality="all">
+                  🌐 Todas las modalidades
+                </button>
+                <button type="button" class="modality-btn" data-modality="remote">
+                  🏠 100% Remoto (Teletrabajo)
+                </button>
+                <button type="button" class="modality-btn" data-modality="hybrid">
+                  🏢 Híbrido
+                </button>
+                <button type="button" class="modality-btn" data-modality="onsite">
+                  📍 Presencial
+                </button>
+              </div>
+            </div>
+
+            <!-- Active Sources Bar -->
+            <div class="sources-strip">
+              <span class="sources-label">Páginas indexadas:</span>
+              <span class="portal-pill">LinkedIn Jobs</span>
+              <span class="portal-pill">InfoJobs</span>
+              <span class="portal-pill">Indeed</span>
+              <span class="portal-pill">Tecnoempleo</span>
+              <span class="portal-pill">Remotive</span>
+              <span class="portal-pill">Arbeitnow</span>
+              <span class="portal-pill">Jobicy</span>
+              <span class="portal-pill">WeWorkRemotely</span>
+            </div>
+
+            <!-- Direct Portals Launchers Bar -->
+            <div class="portals-launch-bar">
+              <span class="portals-launch-label">🔗 Accesos directos con tu búsqueda:</span>
+              <div class="portal-links-group">
+                <a id="linkLaunchInfojobs" href="https://www.infojobs.net" target="_blank" rel="noopener noreferrer" class="portal-launch-btn">
+                  💼 Abrir en InfoJobs ↗
+                </a>
+                <a id="linkLaunchIndeed" href="https://es.indeed.com" target="_blank" rel="noopener noreferrer" class="portal-launch-btn">
+                  🔍 Abrir en Indeed ↗
+                </a>
+                <a id="linkLaunchLinkedin" href="https://www.linkedin.com/jobs" target="_blank" rel="noopener noreferrer" class="portal-launch-btn">
+                  🌐 Abrir en LinkedIn ↗
+                </a>
+              </div>
+            </div>
+
+            <div class="hunter-info-tip">
+              💡 <strong>Tip para InfoJobs e Indeed:</strong> Si localizas una oferta en Indeed o InfoJobs que te interese, puedes pegar su enlace o copiar y pegar su descripción en la pestaña <strong>«🎯 Analizar oferta»</strong> para que el asistente la evalúe y adapte tu CV en un solo clic.
+            </div>
+
+            <!-- Manual Search Bar (Optional Filters) -->
+            <div class="manual-search-box">
+              <div class="grid-2">
+                <div class="form-row" style="margin-bottom:0;">
+                  <label for="hunterQueryInput">Filtrar por puesto o palabra clave (opcional)</label>
+                  <input id="hunterQueryInput" type="text" placeholder="Ej: Python Developer, DevOps, Full Stack..." />
+                </div>
+                <div class="form-row" style="margin-bottom:0;">
+                  <label for="hunterLocationInput">Ubicación (opcional)</label>
+                  <input id="hunterLocationInput" type="text" placeholder="Ej: España, Madrid, Barcelona, Europa..." />
+                </div>
+              </div>
+              <div class="actions-bar" style="margin-top:10px;">
+                <button id="btnRunHunterSearch" class="btn btn-secondary btn-sm" type="button">
+                  🔍 Buscar con filtros personalizados
+                </button>
+                <button id="btnHunterQuickRefresh" class="btn btn-ghost btn-sm" type="button">↻ Actualizar feed</button>
+              </div>
+            </div>
+
+            <!-- Collapsible Preferences Drawer -->
+            <div id="hunterPrefsDrawer" class="subcard hidden" style="margin-top:14px;">
+              <div class="card-header">
+                <div>
+                  <h3>⚙️ Configuración del Perfil de Búsqueda</h3>
+                  <p class="muted small">Estos datos guían la búsqueda automática para encontrar ofertas acordes a tu momento profesional.</p>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="form-row">
+                  <label for="prefRolesInput">Roles objetivo (separados por coma)</label>
+                  <input id="prefRolesInput" type="text" placeholder="Backend Developer, Python Engineer, Software Developer" />
+                </div>
+                <div class="form-row">
+                  <label for="prefCountryInput">País por defecto</label>
+                  <input id="prefCountryInput" type="text" placeholder="España, México, Estados Unidos, Remoto Global..." />
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="form-row">
+                  <label for="prefLevelSelect">Nivel de experiencia buscado</label>
+                  <select id="prefLevelSelect">
+                    <option value="all">Cualquier nivel</option>
+                    <option value="junior">Junior (0 - 2 años)</option>
+                    <option value="mid">Mid / Intermedio (2 - 5 años)</option>
+                    <option value="senior">Senior (5+ años)</option>
+                    <option value="lead">Lead / Principal</option>
+                  </select>
+                </div>
+                <div class="form-row">
+                  <label for="prefKeywordsInclude">Habilidades prioritarias que buscas ejercer</label>
+                  <input id="prefKeywordsInclude" type="text" placeholder="FastAPI, PostgreSQL, Docker, AWS..." />
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="form-row">
+                  <label for="prefKeywordsExclude">Términos o tecnologías a excluir / evitar</label>
+                  <input id="prefKeywordsExclude" type="text" placeholder="PHP, Cobol, guardias 24/7..." />
+                </div>
+              </div>
+              <div class="actions-bar" style="margin-top:10px;">
+                <button id="btnSaveHunterPrefs" class="btn btn-primary btn-sm" type="button">Guardar preferencias</button>
+                <span id="hunterPrefsSavedHint" class="muted small"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feed of Discovered Jobs -->
+          <div class="card">
+            <div class="card-header" style="margin-bottom:8px;">
+              <div>
+                <h2>Ofertas encontradas (<span id="discoveredCount">0</span>)</h2>
+                <p class="muted small">Ordenadas por afinidad estimada según tu CV base y memoria persistente.</p>
+              </div>
+              <!-- Filter Pills -->
+              <div class="filter-pills">
+                <button class="pill-filter active" data-hunter-filter="all">Todas</button>
+                <button class="pill-filter" data-hunter-filter="high">Alta afinidad (+70%)</button>
+                <button class="pill-filter" data-hunter-filter="remote">100% Remoto</button>
+                <button class="pill-filter" data-hunter-filter="saved">⭐ Guardadas</button>
+              </div>
+            </div>
+
+            <div id="hunterEmptyFeed" class="empty-inline hidden">
+              No hay ofertas disponibles con los filtros actuales. Pulsa <strong>Buscar ofertas compatibles</strong> para explorar nuevas convocatorias.
+            </div>
+
+            <div id="discoveredJobsFeed" class="job-feed"></div>
+          </div>
+        </section>
+
+        <!-- VIEW 2: BASE CV -->
+        <section id="view-cv" class="view">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h1>Mi CV Base (Fuente de verdad)</h1>
+                <p class="muted">Sube tu currículum en PDF, Word (.docx), TXT o Markdown, o pégalo y edítalo aquí. Todo lo que el sistema genere partirá estrictamente de este documento y de tu Memoria confirmada.</p>
+              </div>
+              <button id="btnLoadSampleCv" class="btn btn-ghost btn-sm" type="button">Cargar CV de ejemplo</button>
+            </div>
+
+            <div id="dropZone" class="drop-zone">
+              <input id="cvFileInput" type="file" accept=".pdf,.docx,.txt,.md" hidden />
+              <div class="drop-icon">📎</div>
+              <div>
+                <strong>Arrastra tu CV aquí o haz clic para seleccionarlo</strong>
+                <div class="muted small">Soporta PDF, DOCX, TXT y Markdown (máx. 15 MB)</div>
+              </div>
+              <div id="uploadedFileBadge" class="tag tag-soft hidden"></div>
+            </div>
+
+            <div class="grid-2" style="margin-top:16px;">
+              <div class="form-row">
+                <label for="cvFullName">Nombre completo</label>
+                <input id="cvFullName" type="text" placeholder="Ej: Marc Rodríguez" />
+              </div>
+              <div class="form-row">
+                <label for="cvHeadline">Titular profesional habitual</label>
+                <input id="cvHeadline" type="text" placeholder="Ej: Ingeniero de Software | Python & Cloud" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label for="cvRawText">Contenido completo de tu CV Base</label>
+              <textarea id="cvRawText" rows="16" placeholder="Pega aquí el texto completo de tu CV (experiencia, logros, formación, idiomas, herramientas, certificaciones...) o sube un archivo arriba."></textarea>
+            </div>
+
+            <div class="actions-bar">
+              <button id="btnSaveCv" class="btn btn-primary btn-lg" type="button">Guardar CV Base</button>
+              <span id="cvLastUpdated" class="muted small"></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 3: PERSISTENT KNOWLEDGE BASE -->
+        <section id="view-knowledge" class="view">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h1>🧠 Memoria Persistente (Base de Conocimiento)</h1>
+                <p class="muted">Todo lo que confirmas o descartas al responder preguntas sobre ofertas queda guardado aquí para siempre. Así el sistema aprende tu perfil real, no te pregunta dos veces lo mismo y nunca inventa habilidades descartadas.</p>
+              </div>
+            </div>
+
+            <div class="stats-row">
+              <div class="stat-box stat-ok">
+                <span id="kbStatConfirmed">0</span>
+                <small>Confirmados</small>
+              </div>
+              <div class="stat-box stat-warn">
+                <span id="kbStatPartial">0</span>
+                <small>Parciales / Básicos</small>
+              </div>
+              <div class="stat-box stat-no">
+                <span id="kbStatDenied">0</span>
+                <small>Descartados (No incluir)</small>
+              </div>
+            </div>
+
+            <!-- Add fact form -->
+            <div class="subcard">
+              <h3>Añadir hecho manualmente</h3>
+              <div class="grid-3">
+                <div class="form-row">
+                  <label for="kbNewTopic">Habilidad / Tema</label>
+                  <input id="kbNewTopic" type="text" placeholder="Ej: Docker Compose, Inglés C1, Gestión de equipos..." />
+                </div>
+                <div class="form-row">
+                  <label for="kbNewCategory">Categoría</label>
+                  <select id="kbNewCategory">
+                    <option>Habilidad técnica</option>
+                    <option>Herramienta</option>
+                    <option>Experiencia</option>
+                    <option>Idioma</option>
+                    <option>Certificación</option>
+                    <option>Soft skill</option>
+                    <option>Logro</option>
+                    <option>Otro</option>
+                  </select>
+                </div>
+                <div class="form-row">
+                  <label for="kbNewStatus">Estado real</label>
+                  <select id="kbNewStatus">
+                    <option value="confirmed">✅ Sí, lo domino / tengo experiencia</option>
+                    <option value="partial">🟡 Parcial / conocimiento básico</option>
+                    <option value="denied">⛔ No lo tengo (no preguntar ni incluir)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <label for="kbNewDetails">Detalles reales y contexto (opcional pero muy útil)</label>
+                <input id="kbNewDetails" type="text" placeholder="Ej: 3 años desplegando microservicios en producción, certificaciones, proyectos concretos..." />
+              </div>
+              <button id="btnAddKbFact" class="btn btn-primary btn-sm" type="button">+ Guardar en memoria</button>
+            </div>
+
+            <!-- Filter & list -->
+            <div class="filter-bar">
+              <input id="kbSearchInput" type="search" placeholder="Buscar en tu memoria..." />
+              <div class="filter-pills">
+                <button class="pill-filter active" data-kb-filter="">Todos</button>
+                <button class="pill-filter" data-kb-filter="confirmed">Confirmados</button>
+                <button class="pill-filter" data-kb-filter="partial">Parciales</button>
+                <button class="pill-filter" data-kb-filter="denied">Descartados</button>
+              </div>
+            </div>
+
+            <div id="kbList" class="kb-list"></div>
+          </div>
+        </section>
+
+        <!-- VIEW 4: HISTORY -->
+        <section id="view-history" class="view">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h1>🗂️ Historial de Ofertas y CVs Adaptados</h1>
+                <p class="muted">Reabre cualquier análisis previo para seguir ajustándolo o volver a descargar su PDF/Word.</p>
+              </div>
+            </div>
+            <div id="historyList" class="history-list"></div>
+          </div>
+        </section>
+
+        <!-- VIEW 5: SETTINGS -->
+        <section id="view-settings" class="view">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h1>⚙️ Configuración del Motor de IA</h1>
+                <p class="muted">Elige cómo quieres analizar ofertas y redactar tus CVs. Puedes usar el modo local sin coste o conectar tu propia API de Gemini, OpenAI, Anthropic u Ollama local.</p>
+              </div>
+            </div>
+
+            <div class="provider-grid" id="providerCards">
+              <button type="button" class="provider-card" data-provider="local">
+                <strong>Modo Local Inteligente</strong>
+                <small>Sin API key · 100% privado · Instantáneo</small>
+              </button>
+              <button type="button" class="provider-card" data-provider="gemini">
+                <strong>Google Gemini</strong>
+                <small>Recomendado · Nivel gratuito en AI Studio</small>
+              </button>
+              <button type="button" class="provider-card" data-provider="openai">
+                <strong>OpenAI (GPT-4o)</strong>
+                <small>Redacción y análisis muy preciso</small>
+              </button>
+              <button type="button" class="provider-card" data-provider="anthropic">
+                <strong>Anthropic Claude</strong>
+                <small>Excelente redacción profesional</small>
+              </button>
+              <button type="button" class="provider-card" data-provider="ollama">
+                <strong>Ollama / LLM Local</strong>
+                <small>Modelos locales en tu propio PC</small>
+              </button>
+            </div>
+
+            <div id="providerFields" class="subcard" style="margin-top:16px;">
+              <div class="grid-2">
+                <div class="form-row" id="apiKeyRow">
+                  <label for="setApiKey">API Key <span id="apiKeySavedHint" class="muted small"></span></label>
+                  <input id="setApiKey" type="password" placeholder="Pega tu clave API (se guarda solo en tu SQLite local)" autocomplete="off" />
+                </div>
+                <div class="form-row">
+                  <label for="setModel">Modelo</label>
+                  <input id="setModel" type="text" placeholder="Ej: gemini-2.5-flash" />
+                </div>
+              </div>
+              <div class="form-row" id="baseUrlRow">
+                <label for="setBaseUrl">Base URL (para Ollama / LM Studio / servidor compatible OpenAI)</label>
+                <input id="setBaseUrl" type="url" placeholder="http://host.docker.internal:11434/v1" />
+              </div>
+              <div class="grid-2">
+                <div class="form-row">
+                  <label for="setTone">Tono de redacción</label>
+                  <input id="setTone" type="text" placeholder="profesional y directo" />
+                </div>
+                <div class="form-row">
+                  <label for="setDefaultLang">Idioma por defecto</label>
+                  <select id="setDefaultLang">
+                    <option value="auto">Automático según la oferta</option>
+                    <option value="es">Español</option>
+                    <option value="en">Inglés</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="actions-bar">
+              <button id="btnSaveSettings" class="btn btn-primary" type="button">Guardar configuración</button>
+              <button id="btnTestAi" class="btn btn-secondary" type="button">Probar conexión IA</button>
+              <span id="testAiResult" class="small"></span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>📡 Acceso desde otros ordenadores o teléfonos en tu Wi-Fi</h2>
+            <p class="muted">Abre esta dirección desde cualquier móvil, tablet u ordenador conectado a la misma red Wi-Fi:</p>
+            <div class="lan-box">
+              <code id="settingsLanUrl">http://192.168.1.149:8000</code>
+              <button id="btnCopyLanUrl" class="btn btn-secondary btn-sm" type="button">Copiar enlace</button>
+            </div>
+            <p class="muted small" style="margin-top:8px;">Si el móvil no carga la página, asegúrate de que el Firewall de Windows permita conexiones entrantes en el puerto <strong id="settingsPort">8000</strong> en tu red privada.</p>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Wi-Fi Connection Modal -->
+  <div id="wifiModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" id="wifiModalBackdrop"></div>
+    <div class="modal-card">
+      <div class="card-header">
+        <h3>📱 Conectar desde móvil u otro PC</h3>
+        <button id="btnCloseWifiModal" class="btn btn-ghost btn-sm">✕</button>
+      </div>
+      <p class="muted small">Conéctate a la misma red Wi-Fi y abre esta dirección o escanea el código:</p>
+      <div id="wifiQrWrap" class="qr-wrap"></div>
+      <div class="lan-box">
+        <code id="modalLanUrl">http://192.168.1.149:8000</code>
+        <button id="btnCopyModalLan" class="btn btn-primary btn-sm" type="button">Copiar</button>
+      </div>
+      <p class="muted small" style="margin-top:10px;">En este mismo ordenador también puedes entrar por <code id="modalLocalUrl">http://localhost:8000</code>.</p>
+    </div>
+  </div>
+
+  <!-- Loading Overlay & Toast -->
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <div id="loadingText">Procesando...</div>
+    </div>
+  </div>
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
