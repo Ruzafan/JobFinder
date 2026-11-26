@@ -1,5 +1,7 @@
 # JobFinder CV Studio
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Ruzafan/JobFinder)
+
 Servicio web local (y listo para Docker) para gestionar tu **CV Base**, analizar ofertas de empleo (por **URL** o texto), detectar **palabras clave ATS**, preguntarte por puntos dudosos **guardando tus respuestas en una memoria persistente**, y generar un **CV adaptado honesto** sin inventar ni exagerar nada, listo para exportar a **PDF (ATS)** y **Word (.docx)**.
 
 Accesible desde cualquier ordenador o teléfono dentro de tu misma red Wi-Fi.
