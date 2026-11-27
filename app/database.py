@@ -40,7 +40,7 @@ class _PgCursorWrapper:
         self.lastrowid = None
 
     def execute(self, query: str, params: Any = None):
-        clean_q = query.strip().replace("?", "%s")
+        clean_q = query.strip().replace("%", "%%").replace("?", "%s")
         upper_q = clean_q.upper()
         # In PostgreSQL, append RETURNING id to INSERT statements to populate lastrowid
         if upper_q.startswith("INSERT INTO") and "RETURNING" not in upper_q:
@@ -64,7 +64,7 @@ class _PgCursorWrapper:
         return self
 
     def executemany(self, query: str, seq_of_params: Any):
-        clean_q = query.replace("?", "%s")
+        clean_q = query.replace("%", "%%").replace("?", "%s")
         return self._cur.executemany(clean_q, seq_of_params)
 
     def fetchone(self):
