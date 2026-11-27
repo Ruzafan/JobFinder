@@ -2012,6 +2012,7 @@ Muy valorable:
   } finally {
     hideLoading();
   }
+}
 
 // ---------- AI Role Suggestions & Interactive Picker ----------
 function renderSuggestedRoles() {

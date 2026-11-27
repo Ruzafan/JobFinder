@@ -1940,25 +1940,311 @@ textarea {
 }
 
 /* =====================================================================
-   Responsive
+   Responsive (Tablet & Mobile)
    ===================================================================== */
+html, body, .app-shell, .layout-body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.topbar-avatar {
+  flex-shrink: 0;
+}
+
 @media (max-width: 900px) {
+  .topbar {
+    padding: 0 14px;
+    height: 52px;
+    gap: 8px;
+  }
+  .brand-sub {
+    display: none;
+  }
   .layout-body {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .sidebar {
+    position: sticky;
+    top: 52px;
+    z-index: 25;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
     flex-direction: row;
+    align-items: center;
+    gap: 6px;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    background: var(--surface);
     border-right: none;
     border-bottom: 1px solid var(--line);
     padding: 8px 12px;
   }
-  .nav-section-title { display: none; }
-  .nav-item { width: auto; white-space: nowrap; }
-  .main-content { padding: 20px 16px 40px; }
+  .sidebar::-webkit-scrollbar {
+    display: none;
+  }
+  .nav-section-title {
+    display: none;
+  }
+  .nav-item {
+    width: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 7px 11px;
+    font-size: 0.83rem;
+  }
+  .nav-item.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #ffffff;
+  }
+  .nav-item.active .nav-icon {
+    color: #ffffff;
+  }
+  .nav-item.active .nav-badge {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: transparent;
+    color: #ffffff;
+  }
+
+  .main-content {
+    padding: 16px 14px 48px;
+    max-width: 100%;
+  }
+  .card {
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .subcard {
+    padding: 14px;
+  }
   .grid-2, .grid-3, .keywords-grid, .star-grid, .stats-row {
     grid-template-columns: 1fr;
   }
-  .cv-paper { padding: 24px 20px; }
-  .hide-sm { display: none; }
+  .cv-paper {
+    padding: 22px 18px;
+    font-size: 0.88rem;
+  }
+  .hide-sm {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .brand-name {
+    font-size: 0.9rem;
+  }
+  .brand-name span {
+    display: none;
+  }
+  .topbar-actions {
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .topbar-profile-btn {
+    padding: 3px 6px 3px 3px;
+    gap: 4px;
+  }
+  #topbarProfileName {
+    display: none;
+  }
+  .pill-btn {
+    padding: 0 8px;
+    height: 30px;
+    font-size: 0.76rem;
+  }
+  #providerBadgeText {
+    display: none;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+  }
+  h2 {
+    font-size: 1rem;
+  }
+
+  /* Hide desktop drag-bookmarklet bar on touch phones */
+  .bookmarklet-box {
+    display: none;
+  }
+
+  /* Prevent iOS auto-zoom on form fields */
+  input[type="text"],
+  input[type="url"],
+  input[type="password"],
+  input[type="search"],
+  input[type="email"],
+  input[type="date"],
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  /* Stack inline input + button rows cleanly */
+  .input-with-btn,
+  .refine-bar,
+  .role-custom-row,
+  .qa-footer,
+  .hunter-cta-box,
+  .portals-launch-bar,
+  .bookmarklet-box,
+  .alert-banner,
+  .info-banner,
+  .profile-toolbar,
+  .lan-box {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .input-with-btn .btn,
+  .refine-bar .btn,
+  .role-custom-row .btn,
+  .qa-footer .btn,
+  .hunter-cta-box .btn,
+  .bookmarklet-drag-btn,
+  .alert-banner .btn,
+  .info-banner .btn,
+  .lan-box .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .role-custom-row input {
+    max-width: 100%;
+  }
+  .lan-box code {
+    word-break: break-all;
+    font-size: 0.78rem;
+  }
+
+  /* Actions bar & button groups */
+  .actions-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .actions-bar .btn {
+    width: 100%;
+  }
+  .card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .card-header .btn-group {
+    width: 100%;
+  }
+  .card-header .btn-group .btn {
+    flex: 1;
+  }
+
+  /* Role picker & job cards */
+  .role-picker-panel {
+    padding: 14px;
+  }
+  .role-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .job-card {
+    padding: 14px;
+  }
+  .job-card-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .match-badge {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 4px 10px;
+  }
+  .job-card-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .job-card-actions .btn-group {
+    width: 100%;
+  }
+  .job-card-actions .btn-group .btn {
+    flex: 1;
+  }
+
+  /* Analysis score header & export toolbar */
+  .score-meters {
+    width: 100%;
+  }
+  .meter {
+    flex: 1;
+    min-width: 0;
+  }
+  .export-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .tabs-inline {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .tab-pill {
+    text-align: center;
+    padding: 6px 4px;
+    font-size: 0.78rem;
+  }
+  .export-buttons {
+    width: 100%;
+  }
+  .export-buttons .btn {
+    flex: 1;
+  }
+
+  /* History & Knowledge cards */
+  .kb-card,
+  .history-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .history-actions {
+    width: 100%;
+  }
+  .history-actions .btn {
+    flex: 1;
+  }
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filter-bar input[type="search"] {
+    max-width: 100%;
+  }
+
+  /* Kanban mobile swipe snap */
+  .kanban-board {
+    grid-template-columns: repeat(6, 82vw);
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 12px;
+  }
+  .kanban-col {
+    scroll-snap-align: start;
+    max-height: 68vh;
+  }
+
+  /* Modals & Toast */
+  .modal {
+    padding: 10px;
+  }
+  .modal-card {
+    padding: 16px;
+    max-height: 92vh;
+  }
+  .toast {
+    left: 12px;
+    right: 12px;
+    bottom: 14px;
+    max-width: none;
+    text-align: center;
+  }
 }
