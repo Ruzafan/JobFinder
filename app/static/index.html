@@ -3,28 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JobFinder CV Studio — Adaptación Honesta ATS</title>
-  <link rel="stylesheet" href="/static/styles.css" />
+  <title>JobFinder Studio — Adaptación Honesta ATS</title>
+  <link rel="stylesheet" href="/static/styles.css?v=2" />
 </head>
 <body>
   <div class="app-shell">
     <!-- Topbar -->
     <header class="topbar">
       <div class="brand">
-        <div class="brand-logo" aria-hidden="true">CV</div>
+        <div class="brand-logo-svg" aria-hidden="true">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+        </div>
         <div>
-          <div class="brand-name">JobFinder CV Studio</div>
-          <div class="brand-sub">Adaptación honesta para filtros ATS e IA</div>
+          <div class="brand-name">JobFinder <span>Studio</span></div>
+          <div class="brand-sub">Adaptación honesta para filtros ATS</div>
         </div>
       </div>
 
       <div class="topbar-actions">
-        <button id="btnProviderBadge" class="pill-btn" title="Configurar proveedor de IA">
-          <span class="dot"></span>
+        <button id="btnTopbarProfile" class="topbar-profile-btn" title="Perfil de CV activo (pulsa para cambiar)">
+          <div class="topbar-avatar" id="topbarAvatar">CV</div>
+          <span id="topbarProfileName">Perfil Principal</span>
+          <svg class="icon icon-sm" viewBox="0 0 24 24" style="opacity:0.55;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+
+        <button id="btnOpenDigestModal" class="pill-btn" title="Ver resumen diario de ofertas compatibles">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <span class="hide-sm">Resumen diario</span>
+        </button>
+
+        <button id="btnProviderBadge" class="pill-btn" title="Configurar motor de IA">
+          <span class="dot-pulse"></span>
           <span id="providerBadgeText">Modo Local</span>
         </button>
+
         <button id="btnOpenWifiModal" class="pill-btn pill-accent" title="Conectar desde móvil u otro PC">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
             <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
             <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
             <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
@@ -36,34 +55,58 @@
     </header>
 
     <div class="layout-body">
-      <!-- Navigation Sidebar / Bottom Bar on Mobile -->
+      <!-- Navigation Sidebar -->
       <nav class="sidebar" aria-label="Navegación principal">
+        <div class="nav-section-title">Candidaturas</div>
         <button class="nav-item active" data-view="analyze">
-          <span class="nav-icon">🎯</span>
+          <span class="nav-icon">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+          </span>
           <span>Analizar oferta</span>
         </button>
+        <button class="nav-item" data-view="tracker">
+          <span class="nav-icon">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+          </span>
+          <span>Seguimiento</span>
+          <span id="navTrackerCount" class="nav-badge">0</span>
+        </button>
         <button class="nav-item" data-view="hunter">
-          <span class="nav-icon">🔍</span>
+          <span class="nav-icon">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </span>
           <span>Buscar ofertas</span>
           <span id="navHunterCount" class="nav-badge ok hidden">0</span>
         </button>
+
+        <div class="nav-section-title">Perfil</div>
         <button class="nav-item" data-view="cv">
-          <span class="nav-icon">📄</span>
+          <span class="nav-icon">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          </span>
           <span>Mi CV Base</span>
           <span id="navCvStatus" class="nav-badge warn">Pendiente</span>
         </button>
         <button class="nav-item" data-view="knowledge">
-          <span class="nav-icon">🧠</span>
+          <span class="nav-icon">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          </span>
           <span>Memoria</span>
           <span id="navKbCount" class="nav-badge">0</span>
         </button>
+
+        <div class="nav-section-title">Sistema</div>
         <button class="nav-item" data-view="history">
-          <span class="nav-icon">🗂️</span>
+          <span class="nav-icon">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </span>
           <span>Historial</span>
           <span id="navHistoryCount" class="nav-badge">0</span>
         </button>
         <button class="nav-item" data-view="settings">
-          <span class="nav-icon">⚙️</span>
+          <span class="nav-icon">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          </span>
           <span>Configuración</span>
         </button>
       </nav>
@@ -75,31 +118,42 @@
         <section id="view-analyze" class="view active">
           <div id="missingCvBanner" class="alert-banner hidden">
             <div>
-              <strong>Primero guarda tu CV Base:</strong> Sube tu PDF/DOCX o pega tu currículum para poder compararlo con ofertas de empleo.
+              <strong>Guarda tu CV Base antes de empezar.</strong> Sube un archivo PDF o DOCX o pega tu currículum para compararlo con ofertas.
             </div>
             <button class="btn btn-primary btn-sm" data-goto="cv">Ir a Mi CV Base</button>
           </div>
 
           <div id="localModeTip" class="info-banner hidden">
             <div>
-              <strong>Modo Local Inteligente activo:</strong> Funciona sin API key para analizar requisitos, guardar tu memoria y adaptar el CV honestamente. Si quieres redacción profunda con IA, añade una clave gratuita de <strong>Google Gemini</strong>, <strong>OpenAI</strong> u <strong>Ollama local</strong> en Configuración.
+              <strong>Modo Local activo.</strong> Analiza requisitos y adapta tu CV sin necesidad de API key. Si prefieres redacción con modelo externo, configura Gemini, OpenAI u Ollama.
             </div>
-            <button class="btn btn-ghost btn-sm" data-goto="settings">Configurar IA</button>
+            <button class="btn btn-secondary btn-sm" data-goto="settings">Configurar IA</button>
+          </div>
+
+          <div class="bookmarklet-box">
+            <div>
+              <strong>Captura rápida desde cualquier portal</strong>
+              <div class="muted small">Arrastra este marcador a tu barra del navegador para importar ofertas desde LinkedIn, Indeed o InfoJobs en un clic.</div>
+            </div>
+            <a id="bookmarkletLink" href="javascript:void(0)" class="bookmarklet-drag-btn" title="Arrastra a la barra de marcadores">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+              Capturar con JobFinder
+            </a>
           </div>
 
           <div class="card">
             <div class="card-header">
               <div>
                 <h1>Nueva oferta de empleo</h1>
-                <p class="muted">Pega la URL de la oferta o su descripción completa. Compararemos cada punto con tu CV base y tu memoria persistente.</p>
+                <p class="muted">Pega el enlace o la descripción completa para compararla con tu CV base y tu memoria.</p>
               </div>
-              <button id="btnResetAnalysis" class="btn btn-ghost btn-sm hidden">+ Nueva oferta</button>
+              <button id="btnResetAnalysis" class="btn btn-secondary btn-sm hidden">Nueva oferta</button>
             </div>
 
             <div class="form-row">
               <label for="jobUrlInput">URL de la oferta (opcional)</label>
               <div class="input-with-btn">
-                <input id="jobUrlInput" type="url" placeholder="https://www.linkedin.com/jobs/view/... o cualquier portal" />
+                <input id="jobUrlInput" type="url" placeholder="https://www.linkedin.com/jobs/view/..." />
                 <button id="btnFetchUrl" class="btn btn-secondary" type="button">Extraer oferta</button>
               </div>
               <small id="urlStatusMsg" class="field-hint"></small>
@@ -107,17 +161,17 @@
 
             <div class="grid-3">
               <div class="form-row">
-                <label for="jobTitleInput">Puesto (opcional, se detecta)</label>
-                <input id="jobTitleInput" type="text" placeholder="Ej: Desarrollador Full Stack" />
+                <label for="jobTitleInput">Puesto (opcional)</label>
+                <input id="jobTitleInput" type="text" placeholder="Ej: Administrativa de facturación" />
               </div>
               <div class="form-row">
                 <label for="jobCompanyInput">Empresa (opcional)</label>
-                <input id="jobCompanyInput" type="text" placeholder="Ej: Tech Iberia" />
+                <input id="jobCompanyInput" type="text" placeholder="Ej: Empresa S.L." />
               </div>
               <div class="form-row">
                 <label for="targetLangSelect">Idioma del CV adaptado</label>
                 <select id="targetLangSelect">
-                  <option value="auto">Automático (idioma de la oferta)</option>
+                  <option value="auto">Automático según la oferta</option>
                   <option value="es">Español</option>
                   <option value="en">Inglés (English)</option>
                 </select>
@@ -126,14 +180,14 @@
 
             <div class="form-row">
               <label for="jobDescInput">Descripción de la oferta</label>
-              <textarea id="jobDescInput" rows="7" placeholder="Pega aquí la descripción, requisitos y responsabilidades de la oferta (o pulsa 'Extraer oferta' si has puesto una URL)..."></textarea>
+              <textarea id="jobDescInput" rows="7" placeholder="Pega aquí los requisitos y responsabilidades de la oferta, o pulsa Extraer oferta tras pegar la URL..."></textarea>
             </div>
 
             <div class="actions-bar">
               <button id="btnAnalyzeJob" class="btn btn-primary btn-lg" type="button">
-                Analizar encaje y detectar palabras clave
+                Analizar encaje
               </button>
-              <button id="btnLoadDemoJob" class="btn btn-ghost btn-sm" type="button">Probar con oferta de ejemplo</button>
+              <button id="btnLoadDemoJob" class="btn btn-ghost btn-sm" type="button">Probar con ejemplo</button>
             </div>
           </div>
 
@@ -143,9 +197,9 @@
             <div class="card score-card">
               <div class="score-header">
                 <div>
-                  <span class="tag tag-soft" id="resProviderTag">motor local</span>
-                  <h2 id="resJobTitle">Título del puesto</h2>
-                  <div class="muted" id="resJobMeta"></div>
+                  <span class="tag tag-soft" id="resProviderTag">Motor local</span>
+                  <h2 id="resJobTitle" style="margin-top:6px;">Título del puesto</h2>
+                  <div class="muted small" id="resJobMeta"></div>
                 </div>
                 <div class="score-meters">
                   <div class="meter">
@@ -163,35 +217,35 @@
               <!-- ATS Keywords -->
               <div class="keywords-grid">
                 <div>
-                  <div class="kw-heading kw-ok">✓ Palabras clave verificadas</div>
+                  <div class="kw-heading kw-ok">Palabras clave verificadas</div>
                   <div id="kwMatched" class="chip-list"></div>
                 </div>
                 <div>
-                  <div class="kw-heading kw-hi">★ Prioritarias a destacar</div>
+                  <div class="kw-heading kw-hi">Prioritarias a destacar</div>
                   <div id="kwHighlight" class="chip-list"></div>
                 </div>
                 <div>
-                  <div class="kw-heading kw-miss">○ Faltantes / por confirmar</div>
+                  <div class="kw-heading kw-miss">Pendientes de confirmar</div>
                   <div id="kwMissing" class="chip-list"></div>
                 </div>
               </div>
             </div>
 
-            <!-- Interactive Unclear Questions (Persistent Memory!) -->
+            <!-- Interactive Unclear Questions -->
             <div id="unclearSection" class="card card-highlight hidden">
               <div class="card-header">
                 <div>
-                  <h2>❓ Puntos por confirmar contigo</h2>
-                  <p class="muted">No queda claro con tu CV actual si cumples estos puntos. Responde con honestidad: <strong>tus respuestas se guardarán en tu memoria permanente</strong> para no volver a preguntártelo en futuras ofertas.</p>
+                  <h2>Puntos por confirmar</h2>
+                  <p class="muted">No queda claro con tu CV actual si cumples estos requisitos. Tus respuestas se guardarán en tu memoria para no repetir preguntas.</p>
                 </div>
               </div>
               <div id="unclearList" class="qa-list"></div>
               <div class="qa-footer">
                 <div class="form-row" style="flex:1; margin-bottom:0;">
-                  <input id="qaExtraInstructions" type="text" placeholder="Indicación opcional al adaptar (ej: 'destaca más mi experiencia en liderazgo' o 'resumen breve')" />
+                  <input id="qaExtraInstructions" type="text" placeholder="Indicación opcional al adaptar (ej: resumen más breve, enfatizar facturación...)" />
                 </div>
                 <button id="btnSubmitAnswers" class="btn btn-primary" type="button">
-                  Guardar en mi memoria y adaptar CV
+                  Guardar y adaptar CV
                 </button>
               </div>
             </div>
@@ -199,88 +253,193 @@
             <!-- Matched & Missing Comparison -->
             <div class="grid-2">
               <div class="card">
-                <h3>✅ Requisitos cumplidos (<span id="matchedCount">0</span>)</h3>
+                <h3>Requisitos cumplidos (<span id="matchedCount">0</span>)</h3>
                 <div id="matchedList" class="req-list"></div>
               </div>
               <div class="card">
-                <h3>⚠️ Carencias / No incluidos (<span id="missingCount">0</span>)</h3>
-                <p class="muted small">Nunca se inventarán ni maquillarán estos puntos en tu CV.</p>
+                <h3>Carencias no incluidas (<span id="missingCount">0</span>)</h3>
+                <p class="muted small">Estos puntos no se inventarán ni se añadirán a tu CV.</p>
                 <div id="missingList" class="req-list"></div>
               </div>
             </div>
 
-            <!-- Generate / Refine Adapted CV -->
+            <!-- Suite Tabs -->
             <div class="card">
-              <div class="card-header">
-                <div>
-                  <h2>✨ CV Adaptado Honesto (Optimizado ATS)</h2>
-                  <p class="muted">Reorganizado y redactado con las palabras clave exactas de la oferta que SÍ coinciden con tu experiencia real.</p>
-                </div>
-                <div class="btn-group">
-                  <button id="btnAdaptNow" class="btn btn-primary" type="button">Generar / Regenerar CV</button>
-                </div>
+              <div class="suite-tabs">
+                <button class="suite-tab-btn active" data-suite-tab="cv">
+                  <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                  CV Adaptado ATS
+                </button>
+                <button class="suite-tab-btn" data-suite-tab="cover-letter">
+                  <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                  Carta de presentación
+                </button>
+                <button class="suite-tab-btn" data-suite-tab="pitch">
+                  <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                  Mensaje a recruiter
+                </button>
+                <button class="suite-tab-btn" data-suite-tab="interview">
+                  <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line></svg>
+                  Simulador de entrevista
+                </button>
               </div>
 
-              <div class="refine-bar">
-                <input id="refineInstructions" type="text" placeholder="¿Quieres ajustarlo juntos? Ej: 'Haz el resumen más directo', 'Agrupa las habilidades técnicas', 'Tradúcelo al inglés'..." />
-                <button id="btnRefineCv" class="btn btn-secondary" type="button">Aplicar ajuste</button>
-              </div>
-
-              <div id="adaptedCvEmpty" class="empty-inline">
-                Responde a las preguntas de arriba (o pulsa <strong>Generar CV</strong> directamente) para crear tu currículum adaptado y descargarlo en PDF o Word.
-              </div>
-
-              <div id="adaptedCvContainer" class="hidden">
-                <div class="export-toolbar">
-                  <div class="tabs-inline">
-                    <button class="tab-pill active" data-cv-tab="preview">Vista previa</button>
-                    <button class="tab-pill" data-cv-tab="edit">Editar texto</button>
-                    <button class="tab-pill" data-cv-tab="audit">Auditoría de honestidad</button>
+              <!-- SUITE TAB 1: ADAPTED CV -->
+              <div id="suiteTabCv">
+                <div class="card-header">
+                  <div>
+                    <h2>CV Adaptado ATS</h2>
+                    <p class="muted">Reorganizado con las palabras clave de la oferta respaldadas por tu experiencia real.</p>
                   </div>
+                  <div class="btn-group">
+                    <button id="btnAdaptNow" class="btn btn-primary" type="button">Generar CV</button>
+                  </div>
+                </div>
+
+                <div class="refine-bar">
+                  <input id="refineInstructions" type="text" placeholder="Ajuste adicional (ej: resumen más directo, traducir al inglés, agrupar herramientas...)" />
+                  <button id="btnRefineCv" class="btn btn-secondary" type="button">Aplicar ajuste</button>
+                </div>
+
+                <div id="adaptedCvEmpty" class="empty-inline">
+                  Responde a los puntos pendientes o pulsa <strong>Generar CV</strong> para crear tu currículum adaptado y descargarlo en PDF o Word.
+                </div>
+
+                <div id="adaptedCvContainer" class="hidden">
+                  <div class="export-toolbar">
+                    <div class="tabs-inline">
+                      <button class="tab-pill active" data-cv-tab="preview">Vista previa</button>
+                      <button class="tab-pill" data-cv-tab="edit">Editar texto</button>
+                      <button class="tab-pill" data-cv-tab="audit">Auditoría</button>
+                    </div>
+
+                    <div class="template-ctrl-group">
+                      <label for="templateSelect" class="small muted">Plantilla:</label>
+                      <select id="templateSelect" class="template-select">
+                        <option value="harvard">Harvard Clásica</option>
+                        <option value="modern">Moderna Slate</option>
+                        <option value="compact">Compacta 1 Página</option>
+                      </select>
+                      <label class="small muted" style="display:inline-flex; align-items:center; gap:5px; cursor:pointer;" title="Ajusta márgenes e interlineado para mantener el CV en una sola página">
+                        <input type="checkbox" id="checkStrictOnePage" />
+                        1 página estricta
+                      </label>
+                    </div>
+
+                    <div class="export-buttons">
+                      <button id="btnCopyCv" class="btn btn-ghost btn-sm" type="button">Copiar</button>
+                      <button id="btnDownloadMd" class="btn btn-ghost btn-sm" type="button">MD</button>
+                      <button id="btnDownloadDocx" class="btn btn-secondary btn-sm" type="button">Word (.docx)</button>
+                      <button id="btnDownloadPdf" class="btn btn-primary btn-sm" type="button">Descargar PDF</button>
+                    </div>
+                  </div>
+
+                  <div id="cvTabPreview" class="cv-paper"></div>
+
+                  <div id="cvTabEdit" class="hidden">
+                    <textarea id="adaptedCvEditor" rows="18" class="mono-editor"></textarea>
+                    <div class="actions-bar" style="margin-top:10px;">
+                      <button id="btnSaveManualCv" class="btn btn-primary btn-sm" type="button">Guardar cambios</button>
+                    </div>
+                  </div>
+
+                  <div id="cvTabAudit" class="hidden audit-panel">
+                    <div class="audit-section">
+                      <h4>Cambios realizados y motivo</h4>
+                      <div id="auditChanges"></div>
+                    </div>
+                    <div class="audit-section">
+                      <h4>Palabras clave ATS integradas</h4>
+                      <div id="auditKeywords"></div>
+                    </div>
+                    <div class="audit-section">
+                      <h4>Control de honestidad</h4>
+                      <ul id="auditHonesty" class="clean-list"></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SUITE TAB 2: COVER LETTER -->
+              <div id="suiteTabCoverLetter" class="hidden">
+                <div class="card-header">
+                  <div>
+                    <h2>Carta de presentación</h2>
+                    <p class="muted">Basada exclusivamente en tus logros verificados y enfocada en esta vacante.</p>
+                  </div>
+                  <div class="btn-group">
+                    <button id="btnGenerateCoverLetter" class="btn btn-primary" type="button">Redactar carta</button>
+                  </div>
+                </div>
+
+                <div class="export-toolbar" style="margin-bottom:12px;">
                   <div class="export-buttons">
-                    <button id="btnCopyCv" class="btn btn-ghost btn-sm" type="button">📋 Copiar</button>
-                    <button id="btnDownloadMd" class="btn btn-ghost btn-sm" type="button">MD</button>
-                    <button id="btnDownloadDocx" class="btn btn-secondary btn-sm" type="button">⬇ Word (.docx)</button>
-                    <button id="btnDownloadPdf" class="btn btn-primary btn-sm" type="button">⬇ PDF (ATS)</button>
+                    <button id="btnCopyCoverLetter" class="btn btn-ghost btn-sm" type="button">Copiar</button>
+                    <button id="btnDownloadCoverLetterDocx" class="btn btn-secondary btn-sm" type="button">Word (.docx)</button>
+                    <button id="btnDownloadCoverLetterPdf" class="btn btn-primary btn-sm" type="button">Descargar PDF</button>
                   </div>
                 </div>
 
-                <!-- Tab: Rendered Preview -->
-                <div id="cvTabPreview" class="cv-paper"></div>
+                <div id="coverLetterEmpty" class="empty-inline">
+                  Pulsa <strong>Redactar carta</strong> para generar una carta personalizada para esta oferta.
+                </div>
+                <div id="coverLetterPreview" class="cv-paper hidden"></div>
+              </div>
 
-                <!-- Tab: Manual Editor -->
-                <div id="cvTabEdit" class="hidden">
-                  <textarea id="adaptedCvEditor" rows="18" class="mono-editor"></textarea>
-                  <div class="actions-bar" style="margin-top:10px;">
-                    <button id="btnSaveManualCv" class="btn btn-primary btn-sm" type="button">Guardar cambios manuales</button>
+              <!-- SUITE TAB 3: RECRUITER PITCH -->
+              <div id="suiteTabPitch" class="hidden">
+                <div class="card-header">
+                  <div>
+                    <h2>Mensaje directo para recruiter</h2>
+                    <p class="muted">Breve, directo y listo para enviar por LinkedIn InMail o correo electrónico.</p>
+                  </div>
+                  <div class="btn-group">
+                    <select id="pitchChannelSelect" style="max-width:160px; padding:6px 10px; font-size:0.83rem;">
+                      <option value="linkedin">LinkedIn InMail</option>
+                      <option value="email">Email formal</option>
+                    </select>
+                    <button id="btnGeneratePitch" class="btn btn-primary" type="button">Generar mensaje</button>
                   </div>
                 </div>
 
-                <!-- Tab: Honesty Audit -->
-                <div id="cvTabAudit" class="hidden audit-panel">
-                  <div class="audit-section">
-                    <h4>🔍 Cambios realizados y por qué</h4>
-                    <div id="auditChanges"></div>
-                  </div>
-                  <div class="audit-section">
-                    <h4>🏷️ Palabras clave ATS integradas (con respaldo real)</h4>
-                    <div id="auditKeywords"></div>
-                  </div>
-                  <div class="audit-section">
-                    <h4>🛡️ Control de honestidad (qué NO se ha inventado)</h4>
-                    <ul id="auditHonesty" class="clean-list"></ul>
+                <div class="form-row" style="margin-bottom:12px;">
+                  <label for="pitchRecipientName">Nombre del contacto o recruiter (opcional)</label>
+                  <input id="pitchRecipientName" type="text" placeholder="Ej: Laura Martínez" style="max-width:320px;" />
+                </div>
+
+                <div class="export-toolbar" style="margin-bottom:10px;">
+                  <div class="export-buttons">
+                    <button id="btnCopyPitch" class="btn btn-ghost btn-sm" type="button">Copiar mensaje</button>
                   </div>
                 </div>
+
+                <div id="pitchTextPreview" class="pitch-box">Pulsa Generar mensaje para crear un texto de contacto para esta vacante.</div>
+              </div>
+
+              <!-- SUITE TAB 4: INTERVIEW SIMULATOR -->
+              <div id="suiteTabInterview" class="hidden">
+                <div class="card-header">
+                  <div>
+                    <h2>Simulador de entrevista (Método STAR)</h2>
+                    <p class="muted">Preguntas clave para este puesto con guías de respuesta basadas en tu trayectoria real.</p>
+                  </div>
+                  <button id="btnGenerateInterview" class="btn btn-primary" type="button">Simular entrevista</button>
+                </div>
+
+                <div id="interviewPrepEmpty" class="empty-inline">
+                  Pulsa <strong>Simular entrevista</strong> para generar las preguntas más probables y tu guía STAR.
+                </div>
+                <div id="interviewPrepContainer" class="hidden"></div>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- VIEW: JOB HUNTER (SEARCH & DISCOVERY) -->
+        <!-- VIEW: JOB HUNTER -->
         <section id="view-hunter" class="view">
           <div id="hunterMissingCvBanner" class="alert-banner hidden">
             <div>
-              <strong>Sube tu CV Base primero:</strong> Para poder buscar ofertas que encajen con tu perfil y calcular su compatibilidad, necesitamos conocer tu CV.
+              <strong>Sube tu CV Base primero.</strong> Necesitamos conocer tu perfil para buscar ofertas y calcular su afinidad.
             </div>
             <button class="btn btn-primary btn-sm" data-goto="cv">Ir a Mi CV Base</button>
           </div>
@@ -288,92 +447,58 @@
           <div class="card hunter-hero-card">
             <div class="card-header">
               <div>
-                <h1>🔍 Buscador de Ofertas de Empleo Multi-Portal</h1>
-                <p class="muted">Explora ofertas en internet (España, Europa y remoto), calcula la <strong>afinidad (%) con tu CV base</strong> y te permite adaptar tu currículum en un solo clic.</p>
+                <h1>Buscador de ofertas</h1>
+                <p class="muted">Explora vacantes en múltiples portales, calcula la afinidad con tu CV y adáptalo en un clic.</p>
               </div>
               <div class="btn-group">
-                <button id="btnAutoDetectPrefs" class="btn btn-ghost btn-sm" type="button">🪄 Autodetectar de mi CV</button>
-                <button id="btnTogglePrefs" class="btn btn-secondary btn-sm" type="button">⚙️ Preferencias</button>
+                <button id="btnAutoDetectPrefs" class="btn btn-ghost btn-sm" type="button">Autodetectar de mi CV</button>
+                <button id="btnTogglePrefs" class="btn btn-secondary btn-sm" type="button">Preferencias</button>
               </div>
             </div>
 
-            <!-- CV Anchored Primary Action -->
             <div class="hunter-cta-box">
               <div class="hunter-cta-text">
-                <strong>¿Quieres ofertas que encajen directamente con tu CV?</strong>
-                <div class="muted small">Analizaremos tu rol, tecnologías, años de experiencia y memoria permanente para buscar en todos los portales disponibles.</div>
+                <strong>Búsqueda automática según tu CV</strong>
+                <div class="muted small">Analiza tu rol, habilidades y memoria para consultar todos los portales activos.</div>
               </div>
-              <button id="btnSearchFromCv" class="btn btn-primary btn-lg btn-glow" type="button">
-                🎯 Buscar ofertas para mi CV
+              <button id="btnSearchFromCv" class="btn btn-primary btn-lg" type="button">
+                Buscar ofertas para mi CV
               </button>
             </div>
 
-            <!-- Country Selector -->
             <div class="form-row" style="margin-top:16px;">
-              <label>País / Región de búsqueda:</label>
+              <label>País o región</label>
               <div class="country-toggle-group" id="countryToggleGroup">
-                <button type="button" class="country-btn active" data-country="España">
-                  🇪🇸 España
-                </button>
-                <button type="button" class="country-btn" data-country="Europa">
-                  🇪🇺 Europa
-                </button>
-                <button type="button" class="country-btn" data-country="Global">
-                  🌎 Remoto Global
-                </button>
-                <button type="button" class="country-btn" data-country="Estados Unidos">
-                  🇺🇸 Estados Unidos
-                </button>
-                <button type="button" class="country-btn" data-country="México">
-                  🇲🇽 México
-                </button>
-                <button type="button" class="country-btn" data-country="Argentina">
-                  🇦🇷 Argentina
-                </button>
-                <button type="button" class="country-btn" data-country="Colombia">
-                  🇨🇴 Colombia
-                </button>
-                <button type="button" class="country-btn" data-country="Chile">
-                  🇨🇱 Chile
-                </button>
-                <button type="button" class="country-btn" data-country="Reino Unido">
-                  🇬🇧 Reino Unido
-                </button>
-                <button type="button" class="country-btn" data-country="Alemania">
-                  🇩🇪 Alemania
-                </button>
-                <button type="button" class="country-btn" data-country="custom" id="btnCustomCountry">
-                  ✏️ Otro país...
-                </button>
+                <button type="button" class="country-btn active" data-country="España">España</button>
+                <button type="button" class="country-btn" data-country="Europa">Europa</button>
+                <button type="button" class="country-btn" data-country="Global">Remoto Global</button>
+                <button type="button" class="country-btn" data-country="Estados Unidos">Estados Unidos</button>
+                <button type="button" class="country-btn" data-country="México">México</button>
+                <button type="button" class="country-btn" data-country="Argentina">Argentina</button>
+                <button type="button" class="country-btn" data-country="Colombia">Colombia</button>
+                <button type="button" class="country-btn" data-country="Chile">Chile</button>
+                <button type="button" class="country-btn" data-country="Reino Unido">Reino Unido</button>
+                <button type="button" class="country-btn" data-country="Alemania">Alemania</button>
+                <button type="button" class="country-btn" data-country="custom" id="btnCustomCountry">Otro país...</button>
               </div>
               <div id="customCountryBox" class="hidden" style="margin-top:8px;">
-                <input id="hunterCustomCountryInput" type="text" placeholder="Escribe el país (ej: Francia, Uruguay, Perú, Suiza...)" style="max-width:320px;" />
+                <input id="hunterCustomCountryInput" type="text" placeholder="Escribe el país (ej: Francia, Suiza, Portugal...)" style="max-width:320px;" />
               </div>
             </div>
 
-            <!-- Modality Selector -->
-            <div class="form-row" style="margin-top:16px;">
-              <label>Modalidad de trabajo deseada:</label>
+            <div class="form-row" style="margin-top:14px;">
+              <label>Modalidad</label>
               <div class="modality-toggle-group" id="modalityToggleGroup">
-                <button type="button" class="modality-btn active" data-modality="all">
-                  🌐 Todas las modalidades
-                </button>
-                <button type="button" class="modality-btn" data-modality="remote">
-                  🏠 100% Remoto (Teletrabajo)
-                </button>
-                <button type="button" class="modality-btn" data-modality="hybrid">
-                  🏢 Híbrido
-                </button>
-                <button type="button" class="modality-btn" data-modality="onsite">
-                  📍 Presencial
-                </button>
+                <button type="button" class="modality-btn active" data-modality="all">Todas</button>
+                <button type="button" class="modality-btn" data-modality="remote">100% Remoto</button>
+                <button type="button" class="modality-btn" data-modality="hybrid">Híbrido</button>
+                <button type="button" class="modality-btn" data-modality="onsite">Presencial</button>
               </div>
             </div>
 
-            <!-- Active Sources Bar -->
             <div class="sources-strip">
-              <span class="sources-label">Páginas indexadas:</span>
-              <span class="portal-pill">LinkedIn Jobs</span>
+              <span class="sources-label">Fuentes:</span>
+              <span class="portal-pill">LinkedIn</span>
               <span class="portal-pill">InfoJobs</span>
               <span class="portal-pill">Indeed</span>
               <span class="portal-pill">Tecnoempleo</span>
@@ -383,84 +508,69 @@
               <span class="portal-pill">WeWorkRemotely</span>
             </div>
 
-            <!-- Direct Portals Launchers Bar -->
             <div class="portals-launch-bar">
-              <span class="portals-launch-label">🔗 Accesos directos con tu búsqueda:</span>
+              <span class="portals-launch-label">Abrir búsqueda directa en portales:</span>
               <div class="portal-links-group">
-                <a id="linkLaunchInfojobs" href="https://www.infojobs.net" target="_blank" rel="noopener noreferrer" class="portal-launch-btn">
-                  💼 Abrir en InfoJobs ↗
-                </a>
-                <a id="linkLaunchIndeed" href="https://es.indeed.com" target="_blank" rel="noopener noreferrer" class="portal-launch-btn">
-                  🔍 Abrir en Indeed ↗
-                </a>
-                <a id="linkLaunchLinkedin" href="https://www.linkedin.com/jobs" target="_blank" rel="noopener noreferrer" class="portal-launch-btn">
-                  🌐 Abrir en LinkedIn ↗
-                </a>
+                <a id="linkLaunchInfojobs" href="https://www.infojobs.net" target="_blank" rel="noopener noreferrer" class="portal-launch-btn">InfoJobs ↗</a>
+                <a id="linkLaunchIndeed" href="https://es.indeed.com" target="_blank" rel="noopener noreferrer" class="portal-launch-btn">Indeed ↗</a>
+                <a id="linkLaunchLinkedin" href="https://www.linkedin.com/jobs" target="_blank" rel="noopener noreferrer" class="portal-launch-btn">LinkedIn ↗</a>
               </div>
             </div>
 
-            <div class="hunter-info-tip">
-              💡 <strong>Tip para InfoJobs e Indeed:</strong> Si localizas una oferta en Indeed o InfoJobs que te interese, puedes pegar su enlace o copiar y pegar su descripción en la pestaña <strong>«🎯 Analizar oferta»</strong> para que el asistente la evalúe y adapte tu CV en un solo clic.
-            </div>
-
-            <!-- Manual Search Bar (Optional Filters) -->
             <div class="manual-search-box">
               <div class="grid-2">
                 <div class="form-row" style="margin-bottom:0;">
-                  <label for="hunterQueryInput">Filtrar por puesto o palabra clave (opcional)</label>
-                  <input id="hunterQueryInput" type="text" placeholder="Ej: Python Developer, DevOps, Full Stack..." />
+                  <label for="hunterQueryInput">Puesto o palabra clave (opcional)</label>
+                  <input id="hunterQueryInput" type="text" placeholder="Ej: Administrativa, Facturación, Python..." />
                 </div>
                 <div class="form-row" style="margin-bottom:0;">
                   <label for="hunterLocationInput">Ubicación (opcional)</label>
-                  <input id="hunterLocationInput" type="text" placeholder="Ej: España, Madrid, Barcelona, Europa..." />
+                  <input id="hunterLocationInput" type="text" placeholder="Ej: España, Madrid, Barcelona..." />
                 </div>
               </div>
               <div class="actions-bar" style="margin-top:10px;">
-                <button id="btnRunHunterSearch" class="btn btn-secondary btn-sm" type="button">
-                  🔍 Buscar con filtros personalizados
-                </button>
-                <button id="btnHunterQuickRefresh" class="btn btn-ghost btn-sm" type="button">↻ Actualizar feed</button>
+                <button id="btnRunHunterSearch" class="btn btn-secondary btn-sm" type="button">Buscar con filtros</button>
+                <button id="btnHunterQuickRefresh" class="btn btn-ghost btn-sm" type="button">Actualizar feed</button>
               </div>
             </div>
 
-            <!-- Collapsible Preferences Drawer -->
             <div id="hunterPrefsDrawer" class="subcard hidden" style="margin-top:14px;">
               <div class="card-header">
                 <div>
-                  <h3>⚙️ Configuración del Perfil de Búsqueda</h3>
-                  <p class="muted small">Estos datos guían la búsqueda automática para encontrar ofertas acordes a tu momento profesional.</p>
+                  <h3>Preferencias de búsqueda</h3>
+                  <p class="muted small">Guían la búsqueda automática y la puntuación de afinidad.</p>
                 </div>
               </div>
               <div class="grid-2">
                 <div class="form-row">
                   <label for="prefRolesInput">Roles objetivo (separados por coma)</label>
-                  <input id="prefRolesInput" type="text" placeholder="Backend Developer, Python Engineer, Software Developer" />
+                  <input id="prefRolesInput" type="text" placeholder="Administrativa, Facturación, Gestión documental" />
                 </div>
                 <div class="form-row">
                   <label for="prefCountryInput">País por defecto</label>
-                  <input id="prefCountryInput" type="text" placeholder="España, México, Estados Unidos, Remoto Global..." />
+                  <input id="prefCountryInput" type="text" placeholder="España, México, Europa..." />
                 </div>
               </div>
               <div class="grid-2">
                 <div class="form-row">
-                  <label for="prefLevelSelect">Nivel de experiencia buscado</label>
+                  <label for="prefLevelSelect">Nivel de experiencia</label>
                   <select id="prefLevelSelect">
                     <option value="all">Cualquier nivel</option>
                     <option value="junior">Junior (0 - 2 años)</option>
-                    <option value="mid">Mid / Intermedio (2 - 5 años)</option>
+                    <option value="mid">Intermedio (2 - 5 años)</option>
                     <option value="senior">Senior (5+ años)</option>
                     <option value="lead">Lead / Principal</option>
                   </select>
                 </div>
                 <div class="form-row">
-                  <label for="prefKeywordsInclude">Habilidades prioritarias que buscas ejercer</label>
-                  <input id="prefKeywordsInclude" type="text" placeholder="FastAPI, PostgreSQL, Docker, AWS..." />
+                  <label for="prefKeywordsInclude">Habilidades prioritarias</label>
+                  <input id="prefKeywordsInclude" type="text" placeholder="ERP, Facturación, Conciliación..." />
                 </div>
               </div>
               <div class="grid-2">
                 <div class="form-row">
-                  <label for="prefKeywordsExclude">Términos o tecnologías a excluir / evitar</label>
-                  <input id="prefKeywordsExclude" type="text" placeholder="PHP, Cobol, guardias 24/7..." />
+                  <label for="prefKeywordsExclude">Términos a excluir</label>
+                  <input id="prefKeywordsExclude" type="text" placeholder="Guardias 24/7, comercial puerta fría..." />
                 </div>
               </div>
               <div class="actions-bar" style="margin-top:10px;">
@@ -470,24 +580,22 @@
             </div>
           </div>
 
-          <!-- Feed of Discovered Jobs -->
           <div class="card">
             <div class="card-header" style="margin-bottom:8px;">
               <div>
                 <h2>Ofertas encontradas (<span id="discoveredCount">0</span>)</h2>
-                <p class="muted small">Ordenadas por afinidad estimada según tu CV base y memoria persistente.</p>
+                <p class="muted small">Ordenadas por afinidad con tu CV base y tu memoria.</p>
               </div>
-              <!-- Filter Pills -->
               <div class="filter-pills">
                 <button class="pill-filter active" data-hunter-filter="all">Todas</button>
                 <button class="pill-filter" data-hunter-filter="high">Alta afinidad (+70%)</button>
                 <button class="pill-filter" data-hunter-filter="remote">100% Remoto</button>
-                <button class="pill-filter" data-hunter-filter="saved">⭐ Guardadas</button>
+                <button class="pill-filter" data-hunter-filter="saved">Guardadas</button>
               </div>
             </div>
 
             <div id="hunterEmptyFeed" class="empty-inline hidden">
-              No hay ofertas disponibles con los filtros actuales. Pulsa <strong>Buscar ofertas compatibles</strong> para explorar nuevas convocatorias.
+              No hay ofertas con los filtros actuales. Pulsa <strong>Buscar ofertas para mi CV</strong> para explorar vacantes.
             </div>
 
             <div id="discoveredJobsFeed" class="job-feed"></div>
@@ -499,18 +607,32 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h1>Mi CV Base (Fuente de verdad)</h1>
-                <p class="muted">Sube tu currículum en PDF, Word (.docx), TXT o Markdown, o pégalo y edítalo aquí. Todo lo que el sistema genere partirá estrictamente de este documento y de tu Memoria confirmada.</p>
+                <h1>Mi CV Base</h1>
+                <p class="muted">Gestiona uno o varios perfiles profesionales. Toda adaptación parte de este documento y tu memoria confirmada.</p>
               </div>
-              <button id="btnLoadSampleCv" class="btn btn-ghost btn-sm" type="button">Cargar CV de ejemplo</button>
+              <button id="btnLoadSampleCv" class="btn btn-ghost btn-sm" type="button">Cargar ejemplo</button>
+            </div>
+
+            <div class="profile-toolbar">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:0.82rem; font-weight:600; color:var(--ink-secondary);">Perfil activo:</span>
+                <div id="profileChipsList" class="profile-chips"></div>
+              </div>
+              <div class="btn-group">
+                <button id="btnNewProfile" class="btn btn-secondary btn-sm" type="button">Nuevo perfil</button>
+                <button id="btnRenameProfile" class="btn btn-ghost btn-sm" type="button">Renombrar</button>
+                <button id="btnDeleteProfile" class="btn btn-danger btn-sm" type="button">Eliminar</button>
+              </div>
             </div>
 
             <div id="dropZone" class="drop-zone">
               <input id="cvFileInput" type="file" accept=".pdf,.docx,.txt,.md" hidden />
-              <div class="drop-icon">📎</div>
+              <div class="drop-icon">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              </div>
               <div>
                 <strong>Arrastra tu CV aquí o haz clic para seleccionarlo</strong>
-                <div class="muted small">Soporta PDF, DOCX, TXT y Markdown (máx. 15 MB)</div>
+                <div class="muted small">PDF, DOCX, TXT o Markdown (máx. 15 MB)</div>
               </div>
               <div id="uploadedFileBadge" class="tag tag-soft hidden"></div>
             </div>
@@ -518,17 +640,17 @@
             <div class="grid-2" style="margin-top:16px;">
               <div class="form-row">
                 <label for="cvFullName">Nombre completo</label>
-                <input id="cvFullName" type="text" placeholder="Ej: Marc Rodríguez" />
+                <input id="cvFullName" type="text" placeholder="Ej: Gaële Rose Parés" />
               </div>
               <div class="form-row">
-                <label for="cvHeadline">Titular profesional habitual</label>
-                <input id="cvHeadline" type="text" placeholder="Ej: Ingeniero de Software | Python & Cloud" />
+                <label for="cvHeadline">Titular profesional</label>
+                <input id="cvHeadline" type="text" placeholder="Ej: Administrativa | Facturación y Gestión Documental" />
               </div>
             </div>
 
             <div class="form-row">
-              <label for="cvRawText">Contenido completo de tu CV Base</label>
-              <textarea id="cvRawText" rows="16" placeholder="Pega aquí el texto completo de tu CV (experiencia, logros, formación, idiomas, herramientas, certificaciones...) o sube un archivo arriba."></textarea>
+              <label for="cvRawText">Contenido completo del CV</label>
+              <textarea id="cvRawText" rows="16" placeholder="Pega aquí el texto de tu CV o sube un archivo arriba..."></textarea>
             </div>
 
             <div class="actions-bar">
@@ -543,8 +665,8 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h1>🧠 Memoria Persistente (Base de Conocimiento)</h1>
-                <p class="muted">Todo lo que confirmas o descartas al responder preguntas sobre ofertas queda guardado aquí para siempre. Así el sistema aprende tu perfil real, no te pregunta dos veces lo mismo y nunca inventa habilidades descartadas.</p>
+                <h1>Memoria persistente</h1>
+                <p class="muted">Tus habilidades confirmadas y descartadas se guardan aquí para evitar preguntas repetidas y mantener la honestidad del CV.</p>
               </div>
             </div>
 
@@ -555,21 +677,20 @@
               </div>
               <div class="stat-box stat-warn">
                 <span id="kbStatPartial">0</span>
-                <small>Parciales / Básicos</small>
+                <small>Parciales</small>
               </div>
               <div class="stat-box stat-no">
                 <span id="kbStatDenied">0</span>
-                <small>Descartados (No incluir)</small>
+                <small>Descartados</small>
               </div>
             </div>
 
-            <!-- Add fact form -->
             <div class="subcard">
-              <h3>Añadir hecho manualmente</h3>
+              <h3>Añadir habilidad o experiencia</h3>
               <div class="grid-3">
                 <div class="form-row">
-                  <label for="kbNewTopic">Habilidad / Tema</label>
-                  <input id="kbNewTopic" type="text" placeholder="Ej: Docker Compose, Inglés C1, Gestión de equipos..." />
+                  <label for="kbNewTopic">Habilidad o tema</label>
+                  <input id="kbNewTopic" type="text" placeholder="Ej: SAP, Conciliación bancaria, Inglés C1..." />
                 </div>
                 <div class="form-row">
                   <label for="kbNewCategory">Categoría</label>
@@ -585,22 +706,21 @@
                   </select>
                 </div>
                 <div class="form-row">
-                  <label for="kbNewStatus">Estado real</label>
+                  <label for="kbNewStatus">Estado</label>
                   <select id="kbNewStatus">
-                    <option value="confirmed">✅ Sí, lo domino / tengo experiencia</option>
-                    <option value="partial">🟡 Parcial / conocimiento básico</option>
-                    <option value="denied">⛔ No lo tengo (no preguntar ni incluir)</option>
+                    <option value="confirmed">Confirmado (tengo experiencia)</option>
+                    <option value="partial">Parcial / nivel básico</option>
+                    <option value="denied">Descartado (no incluir)</option>
                   </select>
                 </div>
               </div>
               <div class="form-row">
-                <label for="kbNewDetails">Detalles reales y contexto (opcional pero muy útil)</label>
-                <input id="kbNewDetails" type="text" placeholder="Ej: 3 años desplegando microservicios en producción, certificaciones, proyectos concretos..." />
+                <label for="kbNewDetails">Contexto real (opcional)</label>
+                <input id="kbNewDetails" type="text" placeholder="Ej: 4 años usando SAP diariamente en departamento contable..." />
               </div>
-              <button id="btnAddKbFact" class="btn btn-primary btn-sm" type="button">+ Guardar en memoria</button>
+              <button id="btnAddKbFact" class="btn btn-primary btn-sm" type="button">Guardar en memoria</button>
             </div>
 
-            <!-- Filter & list -->
             <div class="filter-bar">
               <input id="kbSearchInput" type="search" placeholder="Buscar en tu memoria..." />
               <div class="filter-pills">
@@ -620,11 +740,76 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h1>🗂️ Historial de Ofertas y CVs Adaptados</h1>
-                <p class="muted">Reabre cualquier análisis previo para seguir ajustándolo o volver a descargar su PDF/Word.</p>
+                <h1>Historial de análisis</h1>
+                <p class="muted">Reabre cualquier oferta analizada para seguir editando o volver a exportar su PDF o Word.</p>
               </div>
             </div>
             <div id="historyList" class="history-list"></div>
+          </div>
+        </section>
+
+        <!-- VIEW: APPLICATION TRACKER (KANBAN) -->
+        <section id="view-tracker" class="view">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h1>Seguimiento de candidaturas</h1>
+                <p class="muted">Arrastra las tarjetas entre columnas para actualizar el estado de cada proceso.</p>
+              </div>
+              <div class="btn-group">
+                <button id="btnNewApplication" class="btn btn-primary btn-sm" type="button">Nueva candidatura</button>
+              </div>
+            </div>
+
+            <div class="kanban-board" id="kanbanBoard">
+              <div class="kanban-col" data-stage="saved">
+                <div class="kanban-col-header">
+                  <span class="kanban-col-title"><span class="stage-dot"></span> Guardadas</span>
+                  <span class="kanban-col-count" id="count-saved">0</span>
+                </div>
+                <div class="kanban-cards" id="cards-saved"></div>
+              </div>
+
+              <div class="kanban-col" data-stage="adapted">
+                <div class="kanban-col-header">
+                  <span class="kanban-col-title"><span class="stage-dot"></span> CV Adaptado</span>
+                  <span class="kanban-col-count" id="count-adapted">0</span>
+                </div>
+                <div class="kanban-cards" id="cards-adapted"></div>
+              </div>
+
+              <div class="kanban-col" data-stage="applied">
+                <div class="kanban-col-header">
+                  <span class="kanban-col-title"><span class="stage-dot"></span> Enviadas</span>
+                  <span class="kanban-col-count" id="count-applied">0</span>
+                </div>
+                <div class="kanban-cards" id="cards-applied"></div>
+              </div>
+
+              <div class="kanban-col" data-stage="interviewing">
+                <div class="kanban-col-header">
+                  <span class="kanban-col-title"><span class="stage-dot"></span> Entrevistas</span>
+                  <span class="kanban-col-count" id="count-interviewing">0</span>
+                </div>
+                <div class="kanban-cards" id="cards-interviewing"></div>
+              </div>
+
+              <div class="kanban-col" data-stage="offered">
+                <div class="kanban-col-header">
+                  <span class="kanban-col-title"><span class="stage-dot"></span> Oferta</span>
+                  <span class="kanban-col-count" id="count-offered">0</span>
+                </div>
+                <div class="kanban-cards" id="cards-offered"></div>
+              </div>
+
+              <div class="kanban-col" data-stage="rejected">
+                <div class="kanban-col-header">
+                  <span class="kanban-col-title"><span class="stage-dot"></span> Descartadas</span>
+                  <span class="kanban-col-count" id="count-rejected">0</span>
+                </div>
+                <div class="kanban-cards" id="cards-rejected"></div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -633,31 +818,31 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h1>⚙️ Configuración del Motor de IA</h1>
-                <p class="muted">Elige cómo quieres analizar ofertas y redactar tus CVs. Puedes usar el modo local sin coste o conectar tu propia API de Gemini, OpenAI, Anthropic u Ollama local.</p>
+                <h1>Configuración del motor de IA</h1>
+                <p class="muted">Usa el modo local sin coste o conecta tu propia API de Gemini, OpenAI, Anthropic u Ollama.</p>
               </div>
             </div>
 
             <div class="provider-grid" id="providerCards">
               <button type="button" class="provider-card" data-provider="local">
-                <strong>Modo Local Inteligente</strong>
-                <small>Sin API key · 100% privado · Instantáneo</small>
+                <strong>Modo Local</strong>
+                <small>Sin API key, privado e instantáneo</small>
               </button>
               <button type="button" class="provider-card" data-provider="gemini">
                 <strong>Google Gemini</strong>
-                <small>Recomendado · Nivel gratuito en AI Studio</small>
+                <small>Nivel gratuito en AI Studio</small>
               </button>
               <button type="button" class="provider-card" data-provider="openai">
-                <strong>OpenAI (GPT-4o)</strong>
-                <small>Redacción y análisis muy preciso</small>
+                <strong>OpenAI</strong>
+                <small>Modelos GPT-4o / 4o-mini</small>
               </button>
               <button type="button" class="provider-card" data-provider="anthropic">
                 <strong>Anthropic Claude</strong>
-                <small>Excelente redacción profesional</small>
+                <small>Redacción profesional avanzada</small>
               </button>
               <button type="button" class="provider-card" data-provider="ollama">
-                <strong>Ollama / LLM Local</strong>
-                <small>Modelos locales en tu propio PC</small>
+                <strong>Ollama Local</strong>
+                <small>Modelos ejecutados en tu equipo</small>
               </button>
             </div>
 
@@ -665,7 +850,7 @@
               <div class="grid-2">
                 <div class="form-row" id="apiKeyRow">
                   <label for="setApiKey">API Key <span id="apiKeySavedHint" class="muted small"></span></label>
-                  <input id="setApiKey" type="password" placeholder="Pega tu clave API (se guarda solo en tu SQLite local)" autocomplete="off" />
+                  <input id="setApiKey" type="password" placeholder="Pega tu clave API" autocomplete="off" />
                 </div>
                 <div class="form-row">
                   <label for="setModel">Modelo</label>
@@ -673,7 +858,7 @@
                 </div>
               </div>
               <div class="form-row" id="baseUrlRow">
-                <label for="setBaseUrl">Base URL (para Ollama / LM Studio / servidor compatible OpenAI)</label>
+                <label for="setBaseUrl">Base URL (Ollama o servidor compatible OpenAI)</label>
                 <input id="setBaseUrl" type="url" placeholder="http://host.docker.internal:11434/v1" />
               </div>
               <div class="grid-2">
@@ -694,19 +879,19 @@
 
             <div class="actions-bar">
               <button id="btnSaveSettings" class="btn btn-primary" type="button">Guardar configuración</button>
-              <button id="btnTestAi" class="btn btn-secondary" type="button">Probar conexión IA</button>
+              <button id="btnTestAi" class="btn btn-secondary" type="button">Probar conexión</button>
               <span id="testAiResult" class="small"></span>
             </div>
           </div>
 
           <div class="card">
-            <h2>📡 Acceso desde otros ordenadores o teléfonos en tu Wi-Fi</h2>
-            <p class="muted">Abre esta dirección desde cualquier móvil, tablet u ordenador conectado a la misma red Wi-Fi:</p>
+            <h2>Acceso en red local</h2>
+            <p class="muted">Abre esta dirección desde cualquier móvil o equipo en la misma red Wi-Fi:</p>
             <div class="lan-box">
               <code id="settingsLanUrl">http://192.168.1.149:8000</code>
               <button id="btnCopyLanUrl" class="btn btn-secondary btn-sm" type="button">Copiar enlace</button>
             </div>
-            <p class="muted small" style="margin-top:8px;">Si el móvil no carga la página, asegúrate de que el Firewall de Windows permita conexiones entrantes en el puerto <strong id="settingsPort">8000</strong> en tu red privada.</p>
+            <p class="muted small" style="margin-top:8px;">Asegúrate de que el Firewall permita conexiones en el puerto <strong id="settingsPort">8000</strong> en tu red privada.</p>
           </div>
         </section>
 
@@ -719,8 +904,8 @@
     <div class="modal-backdrop" id="wifiModalBackdrop"></div>
     <div class="modal-card">
       <div class="card-header">
-        <h3>📱 Conectar desde móvil u otro PC</h3>
-        <button id="btnCloseWifiModal" class="btn btn-ghost btn-sm">✕</button>
+        <h3>Conectar desde móvil u otro PC</h3>
+        <button id="btnCloseWifiModal" class="btn btn-ghost btn-sm" aria-label="Cerrar">✕</button>
       </div>
       <p class="muted small">Conéctate a la misma red Wi-Fi y abre esta dirección o escanea el código:</p>
       <div id="wifiQrWrap" class="qr-wrap"></div>
@@ -728,7 +913,100 @@
         <code id="modalLanUrl">http://192.168.1.149:8000</code>
         <button id="btnCopyModalLan" class="btn btn-primary btn-sm" type="button">Copiar</button>
       </div>
-      <p class="muted small" style="margin-top:10px;">En este mismo ordenador también puedes entrar por <code id="modalLocalUrl">http://localhost:8000</code>.</p>
+      <p class="muted small" style="margin-top:10px;">En este ordenador también puedes entrar por <code id="modalLocalUrl">http://localhost:8000</code>.</p>
+    </div>
+  </div>
+
+  <!-- Application Modal (New / Edit) -->
+  <div id="applicationModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" id="appModalBackdrop"></div>
+    <div class="modal-card">
+      <div class="card-header">
+        <h3 id="appModalTitle">Nueva candidatura</h3>
+        <button id="btnCloseAppModal" class="btn btn-ghost btn-sm" aria-label="Cerrar">✕</button>
+      </div>
+      <input type="hidden" id="appModalId" value="" />
+      <div class="grid-2">
+        <div class="form-row">
+          <label for="appJobTitle">Puesto *</label>
+          <input id="appJobTitle" type="text" placeholder="Ej: Administrativa" required />
+        </div>
+        <div class="form-row">
+          <label for="appCompany">Empresa *</label>
+          <input id="appCompany" type="text" placeholder="Ej: Empresa S.L." required />
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-row">
+          <label for="appLocation">Ubicación</label>
+          <input id="appLocation" type="text" placeholder="Ej: Remoto / Barcelona" />
+        </div>
+        <div class="form-row">
+          <label for="appSalary">Salario / Rango</label>
+          <input id="appSalary" type="text" placeholder="Ej: 26.000€ - 30.000€" />
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-row">
+          <label for="appStage">Fase del proceso</label>
+          <select id="appStage">
+            <option value="saved">Guardada</option>
+            <option value="adapted">CV Adaptado</option>
+            <option value="applied">Enviada</option>
+            <option value="interviewing">Entrevistas</option>
+            <option value="offered">Oferta recibida</option>
+            <option value="rejected">Descartada</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label for="appNextFollowup">Próximo seguimiento</label>
+          <input id="appNextFollowup" type="date" />
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-row">
+          <label for="appContactName">Persona de contacto</label>
+          <input id="appContactName" type="text" placeholder="Ej: Elena (RRHH)" />
+        </div>
+        <div class="form-row">
+          <label for="appContactEmail">Email de contacto</label>
+          <input id="appContactEmail" type="email" placeholder="elena@empresa.com" />
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="appSourceUrl">URL de la vacante</label>
+        <input id="appSourceUrl" type="url" placeholder="https://..." />
+      </div>
+      <div class="form-row">
+        <label for="appNotes">Notas del proceso</label>
+        <textarea id="appNotes" rows="3" placeholder="Detalles de llamadas, feedback o preguntas clave..."></textarea>
+      </div>
+      <div class="actions-bar" style="margin-top:14px; justify-content:space-between;">
+        <button id="btnDeleteApp" class="btn btn-danger btn-sm hidden" type="button">Eliminar</button>
+        <div style="display:flex; gap:8px;">
+          <button id="btnCancelAppModal" class="btn btn-ghost btn-sm" type="button">Cancelar</button>
+          <button id="btnSaveApp" class="btn btn-primary btn-sm" type="button">Guardar candidatura</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Daily Digest Modal -->
+  <div id="digestModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" id="digestModalBackdrop"></div>
+    <div class="modal-card" style="max-width:760px;">
+      <div class="card-header">
+        <div>
+          <h3>Resumen diario de ofertas</h3>
+          <p class="muted small">Vacantes de hoy con afinidad superior al 70% respecto a tu perfil activo.</p>
+        </div>
+        <button id="btnCloseDigestModal" class="btn btn-ghost btn-sm" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="actions-bar" style="margin-bottom:14px;">
+        <button id="btnRefreshDigest" class="btn btn-primary btn-sm" type="button">Actualizar resumen</button>
+        <span id="digestMetaDate" class="muted small"></span>
+      </div>
+      <div id="digestJobsList" class="job-feed" style="max-height:480px; overflow-y:auto;"></div>
     </div>
   </div>
 
@@ -741,6 +1019,6 @@
   </div>
   <div id="toast" class="toast hidden"></div>
 
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=2"></script>
 </body>
 </html>

@@ -111,3 +111,94 @@ class ConvertToAnalysisRequest(BaseModel):
     target_language: str = "auto"
     extra_instructions: str = ""
 
+
+# --- Multi-Profile Models ---
+
+class CVProfileCreate(BaseModel):
+    profile_name: str = Field(..., min_length=1, max_length=120)
+    full_name: str = ""
+    headline: str = ""
+    raw_text: str = ""
+    filename: Optional[str] = None
+    set_active: bool = True
+
+
+class CVProfileUpdateModel(BaseModel):
+    profile_name: Optional[str] = None
+    full_name: Optional[str] = None
+    headline: Optional[str] = None
+    raw_text: Optional[str] = None
+    filename: Optional[str] = None
+
+
+# --- Cover Letter, Pitch & Interview Simulator Models ---
+
+class GenerateCoverLetterRequest(BaseModel):
+    tone: str = "profesional y convincente"
+    target_language: str = "auto"
+    extra_instructions: str = ""
+
+
+class GenerateRecruiterPitchRequest(BaseModel):
+    channel: Literal["linkedin", "email"] = "linkedin"
+    recipient_name: Optional[str] = None
+    target_language: str = "auto"
+
+
+class GenerateInterviewPrepRequest(BaseModel):
+    target_language: str = "auto"
+
+
+# --- Application Tracker Models ---
+
+ApplicationTrackerStage = Literal["saved", "adapted", "applied", "interviewing", "offered", "rejected"]
+
+
+class ApplicationTrackerCreate(BaseModel):
+    job_title: str = Field(..., min_length=1)
+    company: str = Field(..., min_length=1)
+    location: str = ""
+    source_url: str = ""
+    stage: ApplicationTrackerStage = "saved"
+    salary_discussed: str = ""
+    contact_name: str = ""
+    contact_email: str = ""
+    notes: str = ""
+    applied_at: Optional[str] = None
+    next_followup_at: Optional[str] = None
+    job_analysis_id: Optional[int] = None
+    discovered_job_id: Optional[int] = None
+
+
+class ApplicationTrackerUpdate(BaseModel):
+    job_title: Optional[str] = None
+    company: Optional[str] = None
+    location: Optional[str] = None
+    source_url: Optional[str] = None
+    stage: Optional[ApplicationTrackerStage] = None
+    salary_discussed: Optional[str] = None
+    contact_name: Optional[str] = None
+    contact_email: Optional[str] = None
+    notes: Optional[str] = None
+    applied_at: Optional[str] = None
+    next_followup_at: Optional[str] = None
+
+
+# --- Daily Digest Models ---
+
+class RunDigestRequest(BaseModel):
+    profile_id: Optional[int] = None
+    min_score: int = 70
+    limit: int = 10
+
+
+# --- Bookmarklet Ingestion ---
+
+class BookmarkletCaptureRequest(BaseModel):
+    url: str
+    title: str = ""
+    company: str = ""
+    text: str = ""
+    html: Optional[str] = None
+
+

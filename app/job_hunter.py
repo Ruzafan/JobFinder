@@ -563,8 +563,19 @@ async def fetch_linkedin_jobs(
                 job_loc = loc_el.get_text(strip=True) if loc_el else (loc_clean or cfg["name"])
                 pub_date = date_el.get_text(strip=True) if date_el else "Reciente"
 
-                # Infer modality if not explicitly filtered
-                job_mod = modality if modality in ("remote", "hybrid", "onsite") else _detect_modality(title, job_loc)
+                # Accurately detect modality: LinkedIn often broadens guest searches and returns on-site jobs
+                # even when &f_WT=2 was requested. Never blindly assign "remote" to physical city locations!
+                job_mod = _detect_modality(title, job_loc)
+                if job_mod == "onsite" and modality == "remote":
+                    known_cities = (
+                        "madrid", "barcelona", "valencia", "sevilla", "málaga", "malaga", "bilbao",
+                        "zaragoza", "alicante", "valladolid", "vigo", "gijón", "gijon", "a coruña",
+                        "coruña", "palma", "granada", "murcia", "san roque", "algeciras", "santa susanna",
+                        "las palmas", "guadalajara", "monterrey", "puebla", "querétaro", "queretaro",
+                    )
+                    if not any(city in job_loc.lower() for city in known_cities):
+                        if job_loc.strip().lower() in ("españa", "spain", "worldwide", "anywhere", "global"):
+                            job_mod = "remote"
 
                 results.append({
                     "external_id": f"li_{abs(hash(raw_url))}",
@@ -641,7 +652,7 @@ async def fetch_tecnoempleo_jobs(
                         loc = word
                         break
 
-                job_mod = modality if modality in ("remote", "hybrid", "onsite") else _detect_modality(card_text, loc)
+                job_mod = _detect_modality(card_text, loc)
 
                 results.append({
                     "external_id": f"tecno_{abs(hash(full_url))}",
@@ -1111,14 +1122,16 @@ async def fetch_indeed_jobs(
                     jk = link_el.get("data-jk") or ""
                     href = link_el.get("href") or ""
                     full_url = f"https://{domain}{href}" if href.startswith("/") else (f"https://{domain}/viewjob?jk={jk}" if jk else href)
+                    loc_text = loc_el.get_text(strip=True) if loc_el else cfg["name"]
+                    job_mod = _detect_modality(t_str, loc_text)
                     results.append({
                         "external_id": f"indeed_{jk or abs(hash(full_url))}",
                         "source": "Indeed",
                         "title": t_str,
                         "company": comp_el.get_text(strip=True) if comp_el else "",
-                        "location": loc_el.get_text(strip=True) if loc_el else cfg["name"],
+                        "location": loc_text,
                         "country": cfg["name"],
-                        "modality": "remote" if ("remoto" in t_str.lower() or "remote" in t_str.lower()) else "onsite",
+                        "modality": job_mod,
                         "source_url": full_url,
                         "description_snippet": snip_el.get_text(" ", strip=True)[:280] if snip_el else "",
                         "raw_description": snip_el.get_text(" ", strip=True) if snip_el else "",

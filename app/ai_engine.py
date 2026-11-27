@@ -1,7 +1,7 @@
 import json
 import re
 import unicodedata
-from typing import Any
+from typing import Any, Optional
 
 import httpx
 
@@ -878,3 +878,333 @@ Requisitos ausentes/descartados (NO INVENTAR): {json.dumps(analysis.get('missing
     parsed.setdefault("honesty_notes", [])
     parsed.setdefault("adapted_cv_structured", {})
     return parsed, provider
+
+
+# =====================================================================
+# Cover Letter, Recruiter Pitch & Interview Simulator
+# =====================================================================
+
+COVER_LETTER_SYSTEM_PROMPT = """Eres un redactor experto de cartas de presentación profesionales y persuasivas con ÉTICA ESTRICTA (cero invenciones).
+
+REGLAS INQUEBRANTABLES:
+1. No inventes experiencia, empresas ni titulaciones que no estén en el CV o en la base de conocimiento confirmada.
+2. Adapta la carta al puesto y empresa especificados, destacando los puntos fuertes reales del candidato.
+3. Estructura limpia en Markdown (cabecera con datos, saludo, introducción de impacto, 2 párrafos de propuesta de valor demostrable, cierre formal y despedida).
+4. Si la oferta está en inglés o se solicita inglés, redacta en inglés; si no, en español profesional.
+5. Devuelve directamente el texto de la carta en Markdown."""
+
+RECRUITER_PITCH_SYSTEM_PROMPT = """Eres un consultor de captación de talento y networking profesional en LinkedIn y correo directo.
+
+REGLAS:
+1. Redacta un mensaje directo ("pitch") de 3 párrafos cortos (menos de 600 caracteres para LinkedIn, o formato conciso de correo electrónico).
+2. Párrafo 1: Gancho respetuoso mencionando el puesto y la empresa.
+3. Párrafo 2: Propuesta de valor directa basada ÚNICAMENTE en competencias reales del candidato.
+4. Párrafo 3: Llamada a la acción clara, educada y sin presión (ej. 5 minutos para una breve toma de contacto).
+5. Devuelve directamente el texto del mensaje."""
+
+INTERVIEW_PREP_SYSTEM_PROMPT = """Eres un entrevistador senior y coach de carreras. Prepara al candidato para su entrevista para este puesto específico.
+
+REGLAS INQUEBRANTABLES:
+1. Diseña 5 preguntas difíciles y específicas para esta oferta: técnicas, conductuales y sobre posibles puntos débiles o gaps del perfil.
+2. Para cada pregunta proporciona una guía de respuesta usando el método STAR (Situación, Tarea, Acción, Resultado) basada ESTRICTAMENTE en su experiencia real.
+3. Añade para cada pregunta una trampa a evitar ("pitfall_to_avoid").
+4. Añade 3 preguntas inteligentes que el candidato puede hacerle a la empresa al final de la entrevista.
+5. Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura:
+{
+  "questions": [
+    {
+      "question": "Pregunta de la entrevista",
+      "category": "Conductual (STAR) | Técnica | Manejo de Carencias | Motivación | Soft Skills",
+      "star_framework": {
+        "situation": "Contexto sugerido basado en su CV real",
+        "task": "El reto o responsabilidad",
+        "action": "Acciones concretas a describir basadas en su perfil",
+        "result": "Impacto positivo o aprendizaje demostrable"
+      },
+      "pitfall_to_avoid": "Qué error común evitar al responder"
+    }
+  ],
+  "smart_questions_to_ask": [
+    "Pregunta 1 para hacer al entrevistador...",
+    "Pregunta 2...",
+    "Pregunta 3..."
+  ]
+}"""
+
+
+def _local_generate_cover_letter(
+    cv_profile: dict[str, Any],
+    job_title: str,
+    company: str,
+    job_description: str,
+    analysis: dict[str, Any],
+    tone: str = "profesional y convincente",
+    extra_instructions: str = "",
+) -> str:
+    full_name = (cv_profile.get("full_name") or "Candidato/a").strip()
+    headline = (cv_profile.get("headline") or "").strip()
+    kw_matched = analysis.get("ats_keywords", {}).get("matched", []) or []
+    top_kws = ", ".join(kw_matched[:4]) if kw_matched else "gestión, resolución de problemas y trabajo en equipo"
+    comp_str = f" en {company}" if company else ""
+
+    body = f"""# Carta de Presentación
+
+**{full_name}**  
+{headline}  
+
+**A la atención del Equipo de Selección{comp_str}**
+
+Estimado/a Responsable de Selección:
+
+Le escribo para presentarle mi candidatura a la posición de **{job_title or 'la vacante convocada'}**{comp_str}. Tras revisar con detalle los requerimientos del puesto, considero que mi trayectoria profesional y competencias verificadas se alinean de manera directa con las necesidades operativas de su organización.
+
+A lo largo de mi trayectoria he consolidado experiencia contrastable en áreas como **{top_kws}**. Mi forma de trabajo se caracteriza por el rigor técnico, la orientación a resultados tangibles y una rápida adaptación a los estándares y herramientas del equipo, garantizando aportes de valor desde el primer día sin asumir compromisos que no pueda respaldar con hechos.
+
+Me motiva especialmente integrarme en {company or 'su equipo'} para contribuir activamente a sus objetivos presentes y futuros, aportando una actitud proactiva, solvencia contrastada y compromiso profesional a largo plazo.
+
+Agradezco de antemano el tiempo dedicado a valorar mi perfil y quedo a su total disposición para mantener una entrevista y ampliar cualquier detalle sobre mi experiencia.
+
+Atentamente,
+
+**{full_name}**
+"""
+    return body.strip()
+
+
+def _local_generate_recruiter_pitch(
+    cv_profile: dict[str, Any],
+    job_title: str,
+    company: str,
+    analysis: dict[str, Any],
+    channel: str = "linkedin",
+    recipient_name: Optional[str] = None,
+) -> str:
+    full_name = (cv_profile.get("full_name") or "Candidato/a").strip()
+    kw_matched = analysis.get("ats_keywords", {}).get("matched", []) or []
+    top_kws = ", ".join(kw_matched[:3]) if kw_matched else "mi experiencia y habilidades clave"
+    greeting = f"Hola {recipient_name.strip()}" if recipient_name else "Hola"
+    comp_str = f" en {company}" if company else ""
+
+    if channel == "linkedin":
+        pitch = f"""{greeting}, te contacto porque he visto la vacante de {job_title or 'empleo'}{comp_str} y considero que mi perfil encaja con vuestra búsqueda.
+
+Cuento con trayectoria sólida y contrastada en {top_kws}, aportando rigor, autonomía y resultados demostrables en puestos similares.
+
+¿Tendrías 5 minutos esta semana para una breve toma de contacto? Estaré encantado/a de compartir mi CV adaptado. ¡Muchas gracias!
+
+{full_name}"""
+    else:  # email
+        pitch = f"""Asunto: Candidatura {job_title}{comp_str} - {full_name}
+
+{greeting}:
+
+Le escribo en relación a la oportunidad de {job_title}{comp_str}. Tras analizar los requisitos clave de la vacante, compruebo que mi trayectoria verificable responde a las necesidades actuales del puesto.
+
+Mi experiencia se centra principalmente en {top_kws}, aportando fiabilidad operativa, solvencia técnica y capacidad para integrarme con agilidad en la dinámica del equipo.
+
+Adjunto a este mensaje mi currículum adaptado con el desglose de proyectos y responsabilidades. Quedo a su disposición para comentar cualquier detalle en una breve llamada de 5 minutos cuando mejor le convenga.
+
+Un cordial saludo,
+
+{full_name}"""
+    return pitch.strip()
+
+
+def _local_generate_interview_prep(
+    cv_profile: dict[str, Any],
+    job_title: str,
+    company: str,
+    job_description: str,
+    analysis: dict[str, Any],
+    facts: list[dict[str, Any]],
+) -> dict[str, Any]:
+    kw_matched = analysis.get("ats_keywords", {}).get("matched", []) or []
+    missing = analysis.get("missing_requirements", []) or []
+    unclear = analysis.get("unclear_requirements", []) or []
+
+    top_skill = kw_matched[0] if kw_matched else "las responsabilidades principales del puesto"
+    sec_skill = kw_matched[1] if len(kw_matched) > 1 else "organización y priorización"
+    gap_topic = missing[0].get("requirement") if missing else (unclear[0].get("topic") if unclear else "nuevas herramientas del sector")
+
+    questions = [
+        {
+            "question": f"¿Cómo aplicarías tu experiencia previa en {top_skill} para resolver los desafíos iniciales como {job_title} en {company or 'nuestro equipo'}?",
+            "category": "Conductual (STAR)",
+            "star_framework": {
+                "situation": f"Menciona un proyecto o puesto de tu CV donde {top_skill} fuera determinante para el flujo de trabajo.",
+                "task": f"Explica cuál era tu objetivo concreto y qué problema debías solventar con {top_skill}.",
+                "action": "Detalla las herramientas exactas, pasos y metodología que aplicaste con rigor.",
+                "result": "Destaca el resultado positivo (reducción de errores, mejora de tiempos o satisfacción del cliente/equipo).",
+            },
+            "pitfall_to_avoid": "No des respuestas genéricas ni hables de lo que 'hacía la empresa'; céntrate en tu acción individual demostrable.",
+        },
+        {
+            "question": f"La oferta requiere o valora conocimientos en {gap_topic}. ¿Cuál es tu experiencia real con ello y cómo gestionas la curva de aprendizaje?",
+            "category": "Manejo honesto de carencias",
+            "star_framework": {
+                "situation": "Reconoce con naturalidad que no es tu competencia principal o que estás en fase de profundización.",
+                "task": "Explica cómo identificas las bases teóricas y prácticas que necesitas dominar.",
+                "action": "Pon un ejemplo real de tu pasado donde aprendiste una nueva herramienta o proceso con rapidez.",
+                "result": "Muestra que tu velocidad de absorción y disciplina garantizan una autonomía rápida sin fingir dominio ficticio.",
+            },
+            "pitfall_to_avoid": "NUNCA intentes fingir que dominas herramientas que no conoces; los entrevistadores detectan la impostura de inmediato.",
+        },
+        {
+            "question": f"Cuéntanos una ocasión en la que tuviste que manejar múltiples prioridades urgentes relacionadas con {sec_skill}.",
+            "category": "Conductual (STAR)",
+            "star_framework": {
+                "situation": "Describe un momento de alta carga laboral o cierre de ciclo con plazos ajustados.",
+                "task": "La necesidad de priorizar sin comprometer la calidad ni cometer errores operativos.",
+                "action": f"Explica cómo estructuraste tu agenda, comunicaste expectativas y aplicaste {sec_skill}.",
+                "result": "Entrega puntual de todos los compromisos y validación de los responsables.",
+            },
+            "pitfall_to_avoid": "Evita decir que 'nunca te estresas'; muestra tu sistema de organización real ante la presión.",
+        },
+        {
+            "question": f"¿Por qué te interesa específicamente unirte a {company or 'esta empresa'} y por qué en este momento de tu carrera?",
+            "category": "Motivación y encaje cultural",
+            "star_framework": {
+                "situation": "Conecta los valores, sector o retos actuales de la empresa con tu evolución profesional.",
+                "task": "Transmitir que tu postulación es deliberada y estudiada, no un envío masivo.",
+                "action": "Menciona 1 o 2 aspectos concretos de la empresa que hayas investigado en la oferta o en su web.",
+                "result": "Demostrar que buscas una relación laboral sólida y de mutuo beneficio a medio-largo plazo.",
+            },
+            "pitfall_to_avoid": "No digas solo 'porque necesito trabajo'; enfócate en el valor mutuo.",
+        },
+        {
+            "question": "¿Cómo gestionas un desacuerdo profesional con un compañero de equipo o responsable sobre la forma de ejecutar una tarea?",
+            "category": "Resolución de conflictos y Soft Skills",
+            "star_framework": {
+                "situation": "Recuerda una situación donde hubo discrepancias en criterios operativos o plazos.",
+                "task": "Llegar a una solución óptima para el proyecto sin generar tensiones interpersonales.",
+                "action": "Escuchar el punto de vista del otro, contrastar con datos objetivos y buscar un punto de encuentro constructivo.",
+                "result": "La tarea se completó eficazmente y se fortaleció la confianza profesional entre ambas partes.",
+            },
+            "pitfall_to_avoid": "No culpes al otro ni adoptes un tono de víctima o imposición; demuestra madurez y empatía.",
+        },
+    ]
+
+    smart_questions = [
+        f"¿Cuáles son los 2 o 3 objetivos prioritarios que esperan que la persona en el puesto de {job_title} alcance en sus primeros 90 días?",
+        f"¿Cómo describiríais la dinámica de trabajo interna del equipo con el que colaborará esta posición en {company or 'la empresa'}?",
+        "¿Cuáles son los principales retos o cuellos de botella actuales a los que se enfrenta el departamento y cómo ayuda este puesto a resolverlos?",
+    ]
+
+    return {
+        "questions": questions,
+        "smart_questions_to_ask": smart_questions,
+    }
+
+
+async def generate_cover_letter(
+    settings: dict[str, Any],
+    cv_profile: dict[str, Any],
+    facts: list[dict[str, Any]],
+    job_title: str,
+    company: str,
+    job_description: str,
+    analysis: dict[str, Any],
+    tone: str = "profesional y convincente",
+    target_language: str = "auto",
+    extra_instructions: str = "",
+) -> tuple[str, str]:
+    provider = (settings.get("provider") or "local").strip().lower()
+    if provider == "local":
+        return (
+            _local_generate_cover_letter(cv_profile, job_title, company, job_description, analysis, tone, extra_instructions),
+            "local",
+        )
+
+    lang_choice = target_language if target_language != "auto" else (analysis.get("offer_language") or "es")
+    user_prompt = f"""=== CONFIGURACIÓN ===
+Idioma: {lang_choice}
+Tono: {tone}
+Instrucciones adicionales: {extra_instructions or 'Ninguna'}
+
+=== CV DEL CANDIDATO ===
+{cv_profile.get('raw_text', '')[:12000]}
+
+=== OFERTA DE EMPLEO ===
+Puesto: {job_title}
+Empresa: {company}
+{job_description[:10000]}
+
+=== PALABRAS CLAVE VERIFICADAS ===
+{json.dumps(analysis.get('ats_keywords', {}), ensure_ascii=False)}
+"""
+    raw = await _call_llm(settings, COVER_LETTER_SYSTEM_PROMPT, user_prompt, expect_json=False)
+    return raw.strip(), provider
+
+
+async def generate_recruiter_pitch(
+    settings: dict[str, Any],
+    cv_profile: dict[str, Any],
+    job_title: str,
+    company: str,
+    analysis: dict[str, Any],
+    channel: str = "linkedin",
+    recipient_name: Optional[str] = None,
+    target_language: str = "auto",
+) -> tuple[str, str]:
+    provider = (settings.get("provider") or "local").strip().lower()
+    if provider == "local":
+        return (
+            _local_generate_recruiter_pitch(cv_profile, job_title, company, analysis, channel, recipient_name),
+            "local",
+        )
+
+    user_prompt = f"""=== CANAL Y RECEPTOR ===
+Canal: {channel} (LinkedIn InMail o Email)
+Nombre del receptor: {recipient_name or 'Responsable de selección'}
+
+=== OFERTA ===
+Puesto: {job_title}
+Empresa: {company}
+
+=== COMPETENCIAS VERIFICADAS DEL CANDIDATO ===
+{json.dumps(analysis.get('ats_keywords', {}).get('matched', []), ensure_ascii=False)}
+
+=== CV DEL CANDIDATO ===
+{cv_profile.get('raw_text', '')[:6000]}
+"""
+    raw = await _call_llm(settings, RECRUITER_PITCH_SYSTEM_PROMPT, user_prompt, expect_json=False)
+    return raw.strip(), provider
+
+
+async def generate_interview_prep(
+    settings: dict[str, Any],
+    cv_profile: dict[str, Any],
+    facts: list[dict[str, Any]],
+    job_title: str,
+    company: str,
+    job_description: str,
+    analysis: dict[str, Any],
+) -> tuple[dict[str, Any], str]:
+    provider = (settings.get("provider") or "local").strip().lower()
+    if provider == "local":
+        return (
+            _local_generate_interview_prep(cv_profile, job_title, company, job_description, analysis, facts),
+            "local",
+        )
+
+    user_prompt = f"""=== PUESTO Y EMPRESA ===
+Puesto: {job_title}
+Empresa: {company}
+
+=== OFERTA DE EMPLEO ===
+{job_description[:12000]}
+
+=== CV REAL DEL CANDIDATO ===
+{cv_profile.get('raw_text', '')[:10000]}
+
+=== ANÁLISIS DE ENCAJE Y GAPS ===
+Cumplidos: {json.dumps(analysis.get('matched_requirements', []), ensure_ascii=False)}
+Carencias o descartes: {json.dumps(analysis.get('missing_requirements', []), ensure_ascii=False)}
+Por confirmar: {json.dumps(analysis.get('unclear_requirements', []), ensure_ascii=False)}
+"""
+    raw = await _call_llm(settings, INTERVIEW_PREP_SYSTEM_PROMPT, user_prompt, expect_json=True)
+    parsed = _extract_json_block(raw)
+    parsed.setdefault("questions", [])
+    parsed.setdefault("smart_questions_to_ask", [])
+    return parsed, provider
+
