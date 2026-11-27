@@ -98,6 +98,7 @@ class JobSearchQuery(BaseModel):
     country: Optional[str] = "España"
     modality: Optional[str] = None
     source: Optional[str] = None
+    roles: Optional[list[str]] = None
     from_cv: bool = False
     min_score: int = 0
     limit: int = 40

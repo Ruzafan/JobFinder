@@ -779,6 +779,20 @@ def auto_detect_hunter_preferences():
     return {"preferences": detected}
 
 
+@app.post("/api/hunter/suggest-roles")
+async def suggest_hunter_roles():
+    cv = database.get_cv_profile()
+    if not cv or len((cv.get("raw_text") or "").strip()) < 20:
+        raise HTTPException(
+            status_code=400,
+            detail="Primero guarda tu CV Base en la pestaña 'Mi CV Base' para sugerir puestos compatibles.",
+        )
+    facts = database.list_knowledge_facts()
+    settings = database.get_settings()
+    roles, provider_used = await ai_engine.suggest_roles_from_cv(settings, cv, facts)
+    return {"roles": roles, "provider_used": provider_used}
+
+
 @app.post("/api/hunter/search")
 async def run_job_search(payload: JobSearchQuery):
     cv = database.get_cv_profile()
@@ -799,6 +813,7 @@ async def run_job_search(payload: JobSearchQuery):
             location_override=payload.location,
             country_override=payload.country,
             modality_override=payload.modality,
+            roles_override=payload.roles,
             from_cv=payload.from_cv,
             limit=payload.limit or 45,
         )

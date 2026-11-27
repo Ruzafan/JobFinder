@@ -1401,6 +1401,7 @@ async def search_and_score_jobs(
     location_override: Optional[str] = None,
     country_override: Optional[str] = None,
     modality_override: Optional[str] = None,
+    roles_override: Optional[list[str]] = None,
     from_cv: bool = False,
     limit: int = 45,
 ) -> list[dict[str, Any]]:
@@ -1410,7 +1411,10 @@ async def search_and_score_jobs(
 
     # 1. Determine queries to search
     queries: list[str] = []
-    if query_override and query_override.strip() and not from_cv:
+    cleaned_override = [r.strip() for r in (roles_override or []) if r and r.strip()]
+    if cleaned_override:
+        queries = list(dict.fromkeys(cleaned_override))[:6]
+    elif query_override and query_override.strip() and not from_cv:
         queries = [query_override.strip()]
     else:
         queries = get_search_queries_for_cv(cv_profile, facts, search_prefs, from_cv=from_cv)

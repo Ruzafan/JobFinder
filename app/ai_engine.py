@@ -1208,3 +1208,192 @@ Por confirmar: {json.dumps(analysis.get('unclear_requirements', []), ensure_asci
     parsed.setdefault("smart_questions_to_ask", [])
     return parsed, provider
 
+
+ROLE_SUGGEST_SYSTEM_PROMPT = """Eres un orientador laboral y recruiter senior experto en el mercado de trabajo español y europeo.
+Tu tarea es leer el CV completo de un candidato (y su memoria de habilidades confirmadas) y proponer entre 8 y 12 títulos de puestos de trabajo REALES y buscables en portales como LinkedIn, InfoJobs e Indeed para los que el candidato encaje de verdad.
+
+REGLAS ESTRICTAS:
+1. Propón títulos cortos, claros y reales tal como los publican las empresas (ej: "Administrativo Contable", "Técnico de Facturación", "Back Office Administrativo", "Customer Support Francés", "Asistente Jurídico / Paralegal", "Tramitador de Siniestros", "Office Manager").
+2. NUNCA concatenes frases largas del titular del CV (NO pongas "Facturación y Gestión de Datos en Remoto").
+3. Aprovecha TODO el CV: experiencia directa, sectores previos, herramientas (ERP, CRM, Excel, etc.), formación e IDIOMAS (si habla francés, inglés o alemán a nivel profesional, propón puestos multilingües de alto volumen).
+4. No inventes competencias que no estén en el CV ni incluyas habilidades marcadas como descartadas.
+5. Responde ÚNICAMENTE con un JSON válido con esta estructura exacta:
+{
+  "roles": [
+    {
+      "title": "Nombre real del puesto",
+      "category": "Principal | Adyacente | Idiomas",
+      "fit": "Alto | Medio",
+      "reason": "Frase breve (máx. 110 caracteres) explicando qué parte real del CV justifica este puesto."
+    }
+  ]
+}
+"""
+
+
+def _local_suggest_roles_from_cv(
+    cv_profile: dict[str, Any],
+    facts: list[dict[str, Any]],
+) -> list[dict[str, str]]:
+    raw_text = (cv_profile.get("raw_text") or "").strip()
+    headline = (cv_profile.get("headline") or "").strip()
+    confirmed_text = " ".join(
+        f"{f.get('topic', '')} {f.get('details', '')}"
+        for f in facts
+        if f.get("status") in ("confirmed", "partial")
+    )
+    denied_norms = {
+        (f.get("topic") or "").strip().lower()
+        for f in facts
+        if f.get("status") == "denied"
+    }
+    norm = _strip_accents(f"{headline}\n{raw_text}\n{confirmed_text}").lower()
+
+    suggestions: list[dict[str, str]] = []
+    seen: set[str] = set()
+
+    def add_role(title: str, category: str, fit: str, reason: str) -> None:
+        key = _strip_accents(title).lower().strip()
+        if not key or key in seen:
+            return
+        if any(d and d in key for d in denied_norms):
+            return
+        seen.add(key)
+        suggestions.append({
+            "title": title,
+            "category": category,
+            "fit": fit,
+            "reason": reason,
+        })
+
+    # Detect languages for high-value multilingual roles
+    has_french = any(k in norm for k in ("frances", "french"))
+    has_english = any(k in norm for k in ("ingles", "english"))
+    has_german = any(k in norm for k in ("aleman", "german"))
+
+    # 1. Administration, Billing, Accounting, Back Office
+    if any(k in norm for k in ("administrativ", "facturaci", "conciliaci", "contab", "finanzas", "erp", "expedient")):
+        add_role("Administrativo/a", "Principal", "Alto", "Encaje directo por tu trayectoria en gestión administrativa y control de expedientes.")
+        add_role("Back Office Administrativo", "Principal", "Alto", "Perfil orientado a operativa interna, control documental y sistemas ERP/CRM.")
+        if any(k in norm for k in ("facturaci", "conciliaci", "contab", "finanzas", "fiscal", "impuest")):
+            add_role("Administrativo/a Contable", "Principal", "Alto", "Respaldado por tu experiencia en ciclo de facturación, conciliación bancaria y finanzas.")
+            add_role("Técnico de Facturación", "Principal", "Alto", "Experiencia directa en emisión, registro y control de facturación.")
+        if any(k in norm for k in ("documental", "archivo", "expedient", "certificados digitales")):
+            add_role("Gestión Documental", "Adyacente", "Alto", "Experiencia en archivo físico/digital, trazabilidad y trámites ante organismos públicos.")
+        add_role("Auxiliar Administrativo", "Principal", "Alto", "Alta demanda en portales para soporte administrativo y gestión diaria.")
+
+    # 2. High-value Multilingual & Customer Support Roles (prioritized because of high remote volume)
+    if has_french:
+        add_role("Customer Support Francés", "Idiomas", "Alto", "Muy demandado en remoto: combina tu francés con experiencia en atención y back office.")
+        add_role("Back Office Francés", "Idiomas", "Alto", "Empresas internacionales buscan perfiles administrativos con francés para gestión de cuentas.")
+    if has_english and any(k in norm for k in ("atencion", "soporte", "internacional", "clientes", "administrativ", "back office")):
+        add_role("Customer Support Inglés", "Idiomas", "Alto", "Tu dominio del inglés abre vacantes internacionales y en remoto de soporte y operaciones.")
+    if has_german:
+        add_role("Customer Support Alemán", "Idiomas", "Alto", "Alto volumen de vacantes para perfiles con alemán en soporte y back office.")
+    if any(k in norm for k in ("atencion al cliente", "atencion telefonica", "call", "incidenci", "soporte", "comercial", "cartera")):
+        add_role("Atención al Cliente", "Principal", "Alto", "Experiencia demostrada en resolución de incidencias y trato directo con clientes.")
+
+    # 3. Legal / Gestoría / Notaría
+    if any(k in norm for k in ("juridic", "legal", "contrat", "notari", "abogad", "mercantil", "criminolog", "laboral")):
+        add_role("Asistente Jurídico / Paralegal", "Adyacente", "Alto", "Por tu tramitación de contratos legales, expedientes notariales y base jurídica.")
+        add_role("Administrativo/a de Gestoría", "Principal", "Alto", "Experiencia en expedientes fiscales, contables, mercantiles y certificados digitales.")
+
+    # 4. Insurance / Assistance / Claims
+    if any(k in norm for k in ("seguro", "siniestr", "asistencia", "correduria", "poliza", "arag", "repatriaci")):
+        add_role("Tramitador de Siniestros", "Adyacente", "Alto", "Por tu experiencia previa coordinando asistencia, incidencias y correduría de seguros.")
+        add_role("Gestor de Asistencia", "Adyacente", "Alto", "Trayectoria directa coordinando asistencia y proveedores con clientes.")
+
+    # 5. Secretarial / Executive Support / Office Manager
+    if any(k in norm for k in ("secretar", "agenda", "recepci", "coordinaci", "direccion", "oficina")):
+        add_role("Secretaria de Dirección", "Adyacente", "Medio", "Experiencia en gestión de agendas, protocolo con clientes y soporte organizativo.")
+        add_role("Office Manager", "Adyacente", "Medio", "Capacidad demostrada en coordinación transversal, proveedores y documentación.")
+
+    # 6. Data Entry / Operations
+    if any(k in norm for k in ("datos", "crm", "erp", "excel", "analisis", "reporting")):
+        add_role("Data Entry / Gestión de Datos", "Adyacente", "Medio", "Experiencia en registro, comprobación y tratamiento de datos en ERP/CRM.")
+
+    # 7. Software / Tech Profiles
+    if any(k in norm for k in ("python", "fastapi", "django", "java", "node", "backend", "api rest", "microservicios")):
+        add_role("Backend Developer", "Principal", "Alto", "Experiencia técnica en desarrollo backend, APIs y bases de datos.")
+        if "python" in norm:
+            add_role("Python Developer", "Principal", "Alto", "Encaje directo por tu experiencia práctica con Python.")
+    if any(k in norm for k in ("react", "vue", "angular", "typescript", "frontend", "javascript")):
+        add_role("Frontend Developer", "Principal", "Alto", "Experiencia en desarrollo de interfaces web modernas.")
+        add_role("Full Stack Developer", "Adyacente", "Alto", "Capacidad para trabajar tanto en cliente como en servidor.")
+    if any(k in norm for k in ("docker", "kubernetes", "aws", "ci/cd", "devops", "terraform")):
+        add_role("DevOps / Cloud Engineer", "Adyacente", "Medio", "Experiencia en contenedores, automatización y despliegues.")
+    if any(k in norm for k in ("sql", "power bi", "tableau", "data analyst", "etl")):
+        add_role("Data Analyst", "Adyacente", "Medio", "Capacidad en análisis de datos, SQL y reporting.")
+
+    # 8. Marketing / HR / Logistics
+    if any(k in norm for k in ("marketing", "seo", "sem", "redes sociales", "copywriting")):
+        add_role("Marketing Digital", "Principal", "Alto", "Experiencia en campañas, contenido y posicionamiento digital.")
+    if any(k in norm for k in ("recursos humanos", "rrhh", "seleccion", "recruiter", "nominas")):
+        add_role("Técnico de RRHH", "Principal", "Alto", "Experiencia en administración de personal, nóminas o selección.")
+    if any(k in norm for k in ("logistica", "almacen", "supply chain", "transporte", "compras")):
+        add_role("Administrativo/a de Logística", "Adyacente", "Medio", "Experiencia en coordinación operativa, proveedores y expediciones.")
+
+    # Fallback if very short CV
+    if not suggestions:
+        base_role = headline.split("|")[0].strip() if headline else "Administrativo/a"
+        add_role(base_role[:40] or "Administrativo/a", "Principal", "Alto", "Puesto principal inferido de tu perfil.")
+        add_role("Back Office", "Adyacente", "Medio", "Puesto transversal con alta oferta en portales.")
+        add_role("Atención al Cliente", "Adyacente", "Medio", "Puesto con alta disponibilidad presencial y remota.")
+
+    return suggestions[:12]
+
+
+async def suggest_roles_from_cv(
+    settings: dict[str, Any],
+    cv_profile: dict[str, Any],
+    facts: list[dict[str, Any]],
+) -> tuple[list[dict[str, str]], str]:
+    provider = (settings.get("provider") or "local").strip().lower()
+    if provider == "local":
+        return _local_suggest_roles_from_cv(cv_profile, facts), "local"
+
+    confirmed = [f for f in facts if f.get("status") in ("confirmed", "partial")]
+    denied = [f.get("topic") for f in facts if f.get("status") == "denied"]
+
+    user_prompt = f"""=== CV BASE DEL CANDIDATO ===
+Nombre: {cv_profile.get('full_name') or 'Candidato'}
+Titular actual: {cv_profile.get('headline') or ''}
+
+{cv_profile.get('raw_text', '')[:10000]}
+
+=== HABILIDADES CONFIRMADAS EN MEMORIA ===
+{json.dumps(confirmed, ensure_ascii=False)}
+
+=== HABILIDADES DESCARTADAS (NO PROPONER PUESTOS BASADOS EN ESTO) ===
+{json.dumps(denied, ensure_ascii=False)}
+"""
+    try:
+        raw = await _call_llm(settings, ROLE_SUGGEST_SYSTEM_PROMPT, user_prompt, expect_json=True)
+        parsed = _extract_json_block(raw)
+        roles = parsed.get("roles") or []
+        cleaned: list[dict[str, str]] = []
+        seen: set[str] = set()
+        for r in roles:
+            if not isinstance(r, dict):
+                continue
+            title = str(r.get("title") or "").strip()
+            if not title or len(title) > 60:
+                continue
+            key = _strip_accents(title).lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            cleaned.append({
+                "title": title,
+                "category": str(r.get("category") or "Principal").strip(),
+                "fit": str(r.get("fit") or "Alto").strip(),
+                "reason": str(r.get("reason") or "Compatible con tu experiencia y perfil.").strip()[:160],
+            })
+        if cleaned:
+            return cleaned[:12], provider
+    except Exception:
+        pass
+
+    return _local_suggest_roles_from_cv(cv_profile, facts), "local"
+
+

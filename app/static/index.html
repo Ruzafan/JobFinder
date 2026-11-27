@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JobFinder Studio — Adaptación Honesta ATS</title>
-  <link rel="stylesheet" href="/static/styles.css?v=2" />
+  <link rel="stylesheet" href="/static/styles.css?v=3" />
 </head>
 <body>
   <div class="app-shell">
@@ -458,12 +458,41 @@
 
             <div class="hunter-cta-box">
               <div class="hunter-cta-text">
-                <strong>Búsqueda automática según tu CV</strong>
-                <div class="muted small">Analiza tu rol, habilidades y memoria para consultar todos los portales activos.</div>
+                <strong>Búsqueda multi-perfil según tu CV</strong>
+                <div class="muted small">Selecciona abajo los puestos que te interesan y buscaremos en todos los portales activos a la vez.</div>
               </div>
               <button id="btnSearchFromCv" class="btn btn-primary btn-lg" type="button">
-                Buscar ofertas para mi CV
+                Buscar ofertas para mis puestos
               </button>
+            </div>
+
+            <!-- AI Role Suggestions & Interactive Picker -->
+            <div class="role-picker-panel" id="rolePickerPanel">
+              <div class="role-picker-header">
+                <div>
+                  <div class="role-picker-title-row">
+                    <h3>Puestos recomendados para tu CV</h3>
+                    <span id="selectedRolesCount" class="tag tag-soft">0 seleccionados</span>
+                    <span id="roleSuggestProviderTag" class="tag tag-soft hidden"></span>
+                  </div>
+                  <p class="muted small" style="margin:2px 0 0;">Marca los perfiles que quieres buscar y desmarca los que no te interesen.</p>
+                </div>
+                <div class="btn-group">
+                  <button id="btnToggleAllRoles" class="btn btn-ghost btn-sm" type="button">Marcar / desmarcar</button>
+                  <button id="btnSuggestRoles" class="btn btn-secondary btn-sm" type="button">Analizar CV y sugerir puestos</button>
+                </div>
+              </div>
+
+              <div id="suggestedRolesGrid" class="role-cards-grid">
+                <div class="muted small" style="grid-column:1/-1; padding:8px 0;">
+                  Pulsa <strong>Analizar CV y sugerir puestos</strong> para que la IA proponga perfiles compatibles con tu currículum.
+                </div>
+              </div>
+
+              <div class="role-custom-row">
+                <input id="customRoleInput" type="text" placeholder="Añadir otro puesto manualmente (ej: Office Manager, Paralegal, Customer Success...)" />
+                <button id="btnAddCustomRole" class="btn btn-secondary btn-sm" type="button">Añadir puesto</button>
+              </div>
             </div>
 
             <div class="form-row" style="margin-top:16px;">
@@ -1019,6 +1048,6 @@
   </div>
   <div id="toast" class="toast hidden"></div>
 
-  <script src="/static/app.js?v=2"></script>
+  <script src="/static/app.js?v=3"></script>
 </body>
 </html>
